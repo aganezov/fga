@@ -12,35 +12,80 @@ __status__ = "develop"
 This script shall be invoked as a command line tool.
 This script is written with python3.4+ support.
 This script accepts only command line arguments.
+This script cannot be used in a Unix/Linux pipe.
 
 Idea:
     the main idea goes as follows. As gene family mapping has to be consistent among different phylogenetic tree
-    splits, we can double check that, taking several genome from more recent split in the tree, and more general
+    splits, we can double check that, taking several genomes from more recent split in the tree, and more general
     genome set from more dated split in the tree. Take two orthology mapping files, and check same gene families
     along with particular genome genes (coding exons) that are mapped to them. Inconsistency arises in the case,
-    when we have same gene (coding exons id) from particular genome is mapped to a different gene families in
+    when we have same gene (coding exons id) from particular genome mapped to a different gene families in
     different orthology map.
 
     As in different mapping files gene families names might differ, further remapping gene families must be performed.
     The following scheme for this is executed:
-        1. for the first mapping file map all gene families, sorted in alphabetic order, to respective integers
-        2. for the second file, get organism, that is present in both original and observed file, for that organism,
-        using the gene_id column, map gene families into each other, and then into respective integers.
-        3. after that for the rest of organism, using created in step 2 mapping, check similarity if gene_id mapping
-        into gene families
-        3.1 if for some organism, there if gene family in file 2, that wasn't mapped at step 2, try to find such
-        organism in file one, try to find respective gene_id, and perform mapping, similar to step 2
+        1. for the first mapping file we map all gene families, sorted in alphabetic order, to respective integers
+        2. for the second file we split data by gene families id, and then we try to determine, to which integer
+        this gene family must be mapped. This value is determined by the gene, that belong to this family (if any
+        of them were previously mapped). After that we double check for all gene, that belong to this particular family,
+        if they were mapped previously, and if so, if they were mapped to the same integer, this gene family, as a whole
+        if mapped.
 
+    Example:
+        file 1 >>>
+            gene_family_id_1 gene_1
+            gene_family_id_1 gene_2
+            gene_family_id_1 gene_3
+            gene_family_id_1 gene_4
+            gene_family_id_1 gene_5
+            gene_family_id_2 gene_11
+            gene_family_id_2 gene_21
+            gene_family_id_2 gene_31
+            gene_family_id_2 gene_41
+            gene_family_id_2 gene_51
+
+        file >>>
+            gene_family_id_11 gene_1
+            gene_family_id_11 gene_2
+            gene_family_id_11 gene_3
+            gene_family_id_11 gene_4
+            gene_family_id_11 gene_51
+            gene_family_id_21 gene_5
+            gene_family_id_21 gene_11
+            gene_family_id_21 gene_21
+            gene_family_id_21 gene_31
+            gene_family_id_21 gene_41
+
+
+        first file gets processed, and gene_family_id_1 gets mapped to 1, as well, as all genes, that belong to it.
+        gene_family_id_2 gets mapped to 2, as well as all genes, that belong to it.
+
+        during the processing of the second file, gene_family_id_11 gets mapped to 1, as 4, out of 5 genes, that
+        belong to it, were previously mapped to 1. after that each gene in gene_family_id_11 gets checked, to see, if
+        it was previously checked, and if so, checked if it was mapped to 1. Fro this process gene_51 gets discovered,
+        as it was previously mapped to 2, but here belongs to family, that is mapped to 1. Same analysis goes for
+        gene_family_id_21, and gene_5 gets discovered.
 
 Input:
-    a list of source files with orthology mapping supplied with space delimiter as cmd arguments for this script
+    2 source files with orthology mapping supplied with space delimiter as cmd arguments for this script
     list shall contain orthology mapping data in tabtext format
     example:
-        >>> python3.4 orthology_mapping_file_1 orthology_mapping_file_2 ...
+        >>> python3.4 check.py orthology_mapping_file_1 orthology_mapping_file_2
 
 Output:
     the script writes to the standard output
     the script outputs only the inconsistent data
+
+    Example:
+        Orthology mapping file orthology_mapping_file_1 contained 0 gene families (out of 19000), where at least one
+        gene was mapped, differently, from previously observed orthology mapping files.
+
+        Orthology mapping file orthology_mapping_file_2 contained 200 gene families (out of 16754), where at least
+        one gene was mapped, differently, from previously observed orthology mapping files.
+        Among miss-mapped gene families, there were
+            2 gene families have 1 miss-mapped genes. List of these families
+                gene_family_id_11 (out of 5)
+                gene_family_id_21 (out of 5)
 """
 
 
