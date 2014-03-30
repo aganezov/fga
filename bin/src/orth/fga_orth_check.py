@@ -8,7 +8,8 @@ __author__ = "Sergey Aganezov"
 __email__ = "aganezov@gwu.edu"
 __status__ = "develop"
 
-"""
+""" Overview / help
+
 This script shall be invoked as a command line tool.
 This script is written with python3.4+ support.
 This script accepts only command line arguments.
