@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from collections import defaultdict, Counter
 import itertools
-import logging
 import sys
 
 __author__ = "Sergey Aganezov"
@@ -95,8 +94,10 @@ integers_source = iter(itertools.count())
 
 
 def retrieve_info_from_string(raw_data_string):
-    """
-    retrieves relative information from raw tab separated string from orthology mapping file
+    """  Retrieves relative information from raw, tab separated string from orthology mapping file
+
+    At this moment we're only interested in "gene family id", "gene id" and "organism name" columns
+
     Args:
         raw_data_string: original tab-separated string
 
@@ -112,11 +113,15 @@ def retrieve_info_from_string(raw_data_string):
 
 def split_file_by_o_ids(file_name):
     """ Parses original file, retrieves relative information, that splits overall data according to orthology ids
+
+    starting with row 2, as first row must be dedicated to column naming
+    skips line, that were not be properly processed with retrieving information procedure
+
     Args:
-        file_name:
+        file_name: source orthology tabtext (tab separated text) file.
 
     Returns:
-            defaultdict: {gene family id: [list of gene ids, organisms for this particular gene family id]}
+            defaultdict: {gene family id: list of tuples (gene ids, organisms name)}
     """
     with open(file_name, "r") as source:
         o_id_splitting = defaultdict(list)
@@ -139,7 +144,6 @@ def main(source_files_list, dest=None):
 
     retrieve_o_id_value = lambda o_id, storage: storage.get(o_id, None)
     retrieve_g_id_value = lambda g_id, organism, storage: storage[organism].get(g_id, None)
-    retrieve_first_value = lambda iterable: next(filter(lambda x: x is not None, iterable))
 
     for source_file in source_files_list:
         o_id_split_data = split_file_by_o_ids(source_file)
@@ -156,14 +160,9 @@ def main(source_files_list, dest=None):
             o_id_value = retrieve_o_id_value(o_id, gene_family_id_mapping)
             #########################################################################################################
             # in this case we have the situation when neither gene family was previously mapped
-            # and non of the gene ids, that are mapped to the current gene family, were previously mapped
+            # and non of the gene ids, that belong to the current gene family, were previously mapped
             #########################################################################################################
             if o_id_value is None and all(g_id is None for g_id in g_id_values):
-
-                logging.debug("o_id {o_id} and none of g_ids {g_ids} were previously mapped".format(
-                    o_id=o_id,
-                    g_ids="(" + ", ".join(str(g_id) for g_id, organism in o_id_split_data[o_id]) + ")"))
-
                 next_int = next(integers_source)
                 gene_family_id_mapping[o_id] = next_int
                 for g_id, organism in o_id_split_data[o_id]:
@@ -171,38 +170,39 @@ def main(source_files_list, dest=None):
                 continue
             #########################################################################################################
             # in this case we have a situation, when gene family was not previously mapped, but
-            # some of gene ids, that are mapped to the current gene family, were previously mapped
-            # used first gene id mapping as mapping for gene family
+            # some of gene ids, that belong to the current gene family, were previously mapped
+            # used determine the biggest group of mapped gene ids, and use their value for mapping current gene family
             #########################################################################################################
             if o_id_value is None and not all(g_id_value is None for g_id_value in g_id_values):
-
-                logging.debug("o_id {o_id} was not previously mapped, but some of g_ids were".format(o_id=o_id))
-
                 o_id_value = g_id_values_cnt.most_common()[0][0]  # extract the actual value, of the most common key
                 gene_family_id_mapping[o_id] = o_id_value
             #########################################################################################################
-            # at this point gene family is mapped to some value for sure, and we need to check, if gene id mapping
-            # is consistent with gene family mapping
+            # at this point gene family is mapped to some value for sure, we need to mapped all gene ids, that were not
+            # previously mapped to the value of the current gene family
             #########################################################################################################
             for g_id_value, (g_id, organism) in zip(g_id_values, o_id_split_data[o_id]):
                 if g_id_value is None:
                     gene_id_mapping[organism][g_id] = o_id_value
-                elif o_id_value != g_id_value:
-                    pass
-                    # print("Miss matching!!! gene_id {g_id} is miss matched!!".format(g_id=g_id), file=dest)
             #########################################################################################################
-            #
+            # need to see how many gene ids were miss mapped.
+            # as we counted mapping for each gene family, and used the most common one for the gene family mapping
+            # all other mapping become inconsistent. count them, to determine how many gene ids are miss mapped in
+            # current gene family. And count the number of gene families, which contain at least one miss mapping
             #########################################################################################################
             if len(g_id_values_cnt) > 1:
-                key = sum(x[1] for x in g_id_values_cnt.most_common()[1:])  # number of genes, for g_ids, different
-                                                                            # from the most popular
+                key = sum(x[1] for x in g_id_values_cnt.most_common()[1:])  # number of gene ids that are mapped,
+                                                                            # differently from the gene family mapping
                 miss_matched_gene_families_cnt += 1
                 miss_matched_gene_families_freq[key].append(o_id)
+
+
         print("Orthology mapping file {file_name} contained {mgfc} gene families (out of {ogfc}), where at least"
               " one gene was mapped, differently, from previously observed orthology mapping files."
               "".format(file_name=source_file, mgfc=miss_matched_gene_families_cnt,
                         ogfc=len(number_of_genes_per_family)),
               file=dest)
+
+        # for each file, that contains at least one gene family, that was miss-mapped, print detailed statistics
         if len(miss_matched_gene_families_freq) > 0:
             print("Among miss-mapped gene families, there were", file=dest)
             for key, value in sorted(miss_matched_gene_families_freq.items(), key=lambda item: -item[0]):
@@ -213,11 +213,11 @@ def main(source_files_list, dest=None):
                 print("\t\t" + "\n\t\t".join(str_value for str_value in tmp), file=dest)
 
 
-
 if __name__ == "__main__":
     cmd_args = sys.argv[1:]
+    if len(cmd_args) != 2:
+        sys.exit(-1)      #  for now program works with only two orthology mapping files
     orthology_source_files = cmd_args
-    logging.basicConfig(level=50)
     main(orthology_source_files)
 
 
