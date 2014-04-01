@@ -284,6 +284,62 @@ def find_fragment_by_extremity(genome, gene_id, vertex):
             return fragment, 1
 
 
+# TODO: implement algorithm
+def connection_creation(f1, f2, d1, d2, storage):
+    """ fills supplied storage with information, regarding connection between different fragments
+
+    determines an extremity of each fragment (of supplied pair), based on directions, and append information
+    to storage about connection, that particular fragment has in particular extremity
+
+    Args:
+        f1: name of first genome fragment
+        f2: name of second genome fragment
+        d1: direction (extremity) of fragment one, that was used in gluing operation
+        d2: direction (extremity) of fragment two, that was used in gluing operation
+        storage: data storage, that contains information about connections between different genome fragments
+
+    Returns:
+        Nothing, modifies storage object inplace
+    """
+
+
+# TODO: implement algorithm
+def chain_construction(start_fragment, extremity, storage, visited):
+    """ constructs a chain of connected fragments by pairwise connection data
+
+    starting from supplied fragment, determines fragment, this one is connected to, and processes with it, appending
+    resulted chain variable. If fragment has no further connection, resulted chain is returned.
+    visited data storage object is updated, and double checked each time, algorithm proceeds, as only paths are possible
+    in assembly, thus each fragment shall be visited exactly once
+
+    Args:
+        start_fragments: name of the fragment, that represents one of two ends of a future chain
+        extremity: extremity of a fragment, that is connected to some other fragment
+        storage: data storage object, that contains information about pairwise connection, between fragments
+        visited: a data storage object, that contains information about fragments, that have been already traversed
+
+    Returns:
+        chain, a list of connected between each other fragments, with their orientation, in this chain
+    """
+
+
+# TODO: implement algorithm
+def get_assembly_fragments(genome, pairwise_gluing_info):
+    """ rewrites genome fragment representation by assembling fragments together by pairwise gluing
+
+    using information of pairwise gluing operations, algorithms performs construction of paths, of such glued fragments.
+    once every fragment is visited through such chain creation, resulted value is return
+
+    Args:
+        genome: dictionary of lists of gene, where each key represents a genome fragment, and value stands for gene,
+            that are located on this fragment
+        pairwise_gluing_info:
+
+    Returns:
+        a set of lists, where each list stands for fragment chain (with length varying from 1 to ...)
+    """
+
+
 def main(mgral_file, gene_mapping_file, gff_files):
     gene_number_mapping = retrieve_gene_number_mapping_from_file(gene_mapping_file=gene_mapping_file)
     genome_aliases, gluing_results = retrieve_glued_vertices_from_file(mgral_file=mgral_file)
