@@ -78,7 +78,8 @@ Output:
 
 # yeap, evil
 # these regular expressions are used to parse MGRAL format file
-vrregex = re.compile("\((?:(?P<vertex1>\d+(?:h|t))|oo),(?:(?P<vertex2>\d+(?:h|t))|oo)\)x\((?:(?P<vertex3>\d+(?:h|t))|oo),(?:(?P<vertex4>\d+(?:h|t))|oo)\):\{(?P<genome_alias>\w)\}")
+vrregex = re.compile(
+    "\((?:(?P<vertex1>\d+(?:h|t))|oo),(?:(?P<vertex2>\d+(?:h|t))|oo)\)x\((?:(?P<vertex3>\d+(?:h|t))|oo),(?:(?P<vertex4>\d+(?:h|t))|oo)\):\{(?P<genome_alias>\w)\}")
 gnsregex = re.compile("(?P<ola>\w)=(?P<gkn>\w+)=(?P<gn>\w+)")
 
 
@@ -302,7 +303,7 @@ def connection_creation(f1, f2, d1, d2, storage):
         Nothing, modifies storage object inplace
     """
     v1 = "h" if d1 == 1 else "t"
-    v2 = "h" if d2 == -1 else "t"
+    v2 = "h" if d2 == 1 else "t"
     storage[f1][v1].append((f2, v2))
     storage[f2][v2].append((f1, v1))
 
@@ -333,12 +334,12 @@ def chain_construction(start_fragment, extremity, storage, visited):
         return [(start_fragment, "+")]
     d = "+" if extremity == "h" else "-"
     result_chain = [(start_fragment, d)]
-    extremity_to_go_to = "h" if extremity == "t" else "t"
+    extremity_to_go_to = extremity
     fragment = start_fragment
     while extremity_to_go_to in storage[fragment]:
-        extremity_came_from = storage[fragment][extremity_to_go_to][1]
-        extremity_to_go_to = "h" if extremity_came_from == "t" else "h"
-        fragment = storage[fragment][extremity_to_go_to][0]
+        extremity_came_from = storage[fragment][extremity_to_go_to][0][1]
+        fragment = storage[fragment][extremity_to_go_to][0][0]
+        extremity_to_go_to = "h" if extremity_came_from == "t" else "t"
         visited[fragment] = True
         d = "+" if extremity_to_go_to == "h" else "-"
         result_chain.append((fragment, d))
@@ -360,12 +361,12 @@ def get_assembly_fragments(genome, pairwise_gluing_info):
     Returns:
         a set of lists, where each list stands for fragment chain (with length varying from 1 to ...)
     """
-    connection_info_storage = defaultdict(lambda x: defaultdict(list))
+    connection_info_storage = defaultdict(lambda: defaultdict(list))
     visited = {fragment_name: False for fragment_name in genome}
     for fragment_1, fragment_2, direction_1, direction_2 in pairwise_gluing_info:
         connection_creation(f1=fragment_1, f2=fragment_2, d1=direction_1, d2=direction_2,
                             storage=connection_info_storage)
-    chains = set()
+    chains = []
     ############################################################################################################
     #
     ############################################################################################################
@@ -376,13 +377,13 @@ def get_assembly_fragments(genome, pairwise_gluing_info):
             #
             ####################################################################################################
             if len(connection_info_storage[fragment_name]) == 1:
-                extremity = connection_info_storage[fragment_name].keys()[0]
+                extremity = list(connection_info_storage[fragment_name].keys())[0]
             else:
                 extremity = None
-            chains.add(chain_construction(start_fragment=fragment_name,
-                                          extremity=extremity,
-                                          storage=connection_info_storage,
-                                          visited=visited))
+            chains.append(chain_construction(start_fragment=fragment_name,
+                                             extremity=extremity,
+                                             storage=connection_info_storage,
+                                             visited=visited))
     return chains
 
 
@@ -408,23 +409,9 @@ def main(mgral_file, gene_mapping_file, gff_files):
     for genome_name in genomes:
         chained_result[genome_name] = get_assembly_fragments(genome=genomes[genome_name],
                                                              pairwise_gluing_info=result[genome_name])
-    # for genome in result:
-    #     print(genome)
-    #     gluing_statistics = result[genome]
-    #     for f1, f2, d1, d2 in gluing_statistics:
-    #         if f1 == f2:
-    #             # print("\t", f1, "!!! (circularized)")
-    #             continue
-    #         if d1 == 1:
-    #             if d2 == -1:
-    #                 print("\t", f1, "(+) <==>", f2, "(+)")
-    #             else:
-    #                 print("\t", f1, "(+) <==>", f2, "(-)")
-    #         else:
-    #             if d2 == -1:
-    #                 print("\t", f1, "(-) <==>", f2, "(+)")
-    #             else:
-    #                 print("\t", f2, "(+) <==>", f1, "(-)")
+        print(genome_name)
+        for chain in chained_result[genome_name]:
+            print("\t" + " <==> ".join("{f} ({d})".format(f=f, d=d) for f, d in chain))
 
 
 if __name__ == "__main__":
