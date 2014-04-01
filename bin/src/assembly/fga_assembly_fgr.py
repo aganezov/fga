@@ -4,7 +4,7 @@ import os
 import sys
 import re
 
-__author__ = 'Sergey Aganezov Jr.'
+__author__ = 'Sergey Aganezov'
 __email__ = 'aganezov@gwu.edu'
 __status__ = 'develop'
 
