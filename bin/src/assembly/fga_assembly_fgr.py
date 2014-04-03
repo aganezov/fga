@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 from collections import defaultdict
 import os
-import sys
 import re
+import argparse
 
 __author__ = 'Sergey Aganezov'
 __email__ = 'aganezov@gwu.edu'
@@ -387,7 +387,7 @@ def get_assembly_fragments(genome, pairwise_gluing_info):
     return chains
 
 
-def main(mgral_file, gene_mapping_file, gff_files):
+def main(mgral_file, gene_mapping_file, gff_files, options):
     gene_number_mapping = retrieve_gene_number_mapping_from_file(gene_mapping_file=gene_mapping_file)
     genome_aliases, gluing_results = retrieve_glued_vertices_from_file(mgral_file=mgral_file)
     genomes = {}
@@ -411,9 +411,19 @@ def main(mgral_file, gene_mapping_file, gff_files):
                                                              pairwise_gluing_info=result[genome_name])
         print(genome_name)
         for chain in chained_result[genome_name]:
-            print("\t" + " <==> ".join("{f} ({d})".format(f=f, d=d) for f, d in chain))
+            if len(chain) > 1 or (hasattr(options, "chains") and options.chains):
+                print("\t" + " <==> ".join("{f} ({d})".format(f=f, d=d) for f, d in chain))
 
 
 if __name__ == "__main__":
-    cmd_args = sys.argv[1:]
-    main(cmd_args[0], cmd_args[1], cmd_args[2:])
+    parser = argparse.ArgumentParser()
+    parser.add_argument("mgral_file")
+    parser.add_argument("-c", "--chains", action="store_true", default=False, help="permits output for all fragments, "
+                                                                                   "not just assembled ones")
+    parser.add_argument("gene_num_mapping_file")
+    parser.add_argument("gff_files", nargs="+")
+    args = parser.parse_args()
+    main(mgral_file=args.mgral_file,
+         gene_mapping_file=args.gene_num_mapping_file,
+         gff_files=args.gff_files,
+         options=args)
