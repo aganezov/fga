@@ -292,7 +292,7 @@ def find_fragment_by_extremity(genome, gene_id, vertex):
             return fragment, 1
 
 
-# TODO: implement algorithm
+# TODO: get tests
 def connection_creation(f1, f2, d1, d2, storage):
     """ fills supplied storage with information, regarding connection between different fragments
 
@@ -315,7 +315,7 @@ def connection_creation(f1, f2, d1, d2, storage):
     storage[f2][v2].append((f1, v1))
 
 
-# TODO: implement algorithm
+# TODO: get tests
 def chain_construction(start_fragment, extremity, storage, visited):
     """ constructs a chain of connected fragments by pairwise connection data
 
@@ -353,7 +353,7 @@ def chain_construction(start_fragment, extremity, storage, visited):
     return result_chain
 
 
-# TODO: implement algorithm
+# TODO: get tests
 def get_assembly_fragments(genome, pairwise_gluing_info):
     """ rewrites genome fragment representation by assembling fragments together by pairwise gluing
 
