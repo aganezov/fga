@@ -34,7 +34,7 @@ as well as genomes definitions
 
     for more examples look at gene_num_map.txx file in current directory
 
-3. gff files for each paricular genome. More on gff fomat [here](http://www.ensembl.org/info/website/upload/gff.html)
+3. gff files for each particular genome. More on gff format [here](http://www.ensembl.org/info/website/upload/gff.html)
 
 Algorithm **checks**, that the number of genome definitions in mgral file equals to the number of genomes, that are
 extracted from one-letter aliases in gluing statistics.
@@ -45,7 +45,7 @@ mapping file it parses each gene (to determine which genome it belong to) by it'
 Algorithm **checks**, that in gluing statistics each breakpoint graph vertex (represented by a particular number), does
  reflect a starting or ending point of genome fragment.
 
-Algortihm **chekcs**, that in gluing statistics each breakpoing graph vertex (represented by a particular number), does
+Algortihm **chekcs**, that in gluing statistics each breakpoint graph vertex (represented by a particular number), does
 reflect a respective gene end, as determined by strand, gene is located on, and "t"|"h" attribute for particular vertex.
 
 
