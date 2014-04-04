@@ -115,7 +115,7 @@ def retrieve_gene_number_mapping_from_file(gene_mapping_file):
     return result
 
 
-def remove_tandem_duplications(fragment_content):
+def colapse_tandem_duplications(fragment_content):
     """ Folds repetitive entries from supplied list to single ones
 
     at the end we perform a double check, making sure, that in the original sequence we didn't have non-repetitive
@@ -236,7 +236,7 @@ def retrieve_genome_from_file(gff_file):
             result[fragment].append((gene_id, start, end, strand))
     for fragment in result:
         result[fragment] = sorted(result[fragment], key=lambda x: (x[1], x[2]))
-        result[fragment] = remove_tandem_duplications(result[fragment])
+        result[fragment] = colapse_tandem_duplications(result[fragment])
     return result
 
 
