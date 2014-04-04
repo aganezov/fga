@@ -2,6 +2,12 @@
 
 this is a quick overview on how to use, and what to expect from fga_assembly_fgr.py script.
 
+Script takes as input several data files with several genome information and outputs each genome as a set of fragments,
+where some oos those are represented as oriented sequence of smaller fragments (result of assembly).
+
+Using **-c** command line option when invoking script will limit its output to only those fragments in each genomes,
+ that were gained, by gluing at least two fragments in original data.
+
 As **-h** options shows, scripts awaits for at least three positional arguments:
 
 1. mgral file -- MGRA-log-like file, which contains information about fusions, that are performed in different genomes
@@ -29,9 +35,6 @@ as well as genomes definitions
     for more examples look at gene_num_map.txx file in current directory
 
 3. gff files for each paricular genome. More on gff fomat [here](http://www.ensembl.org/info/website/upload/gff.html)
-
-Using **-c** command line option when invoking script will limit its output to only those fragments in each genomes,
- that were gained, by gluing at least two fragments in original data.
 
 Algorithm **checks**, that the number of genome definitions in mgral file equals to the number of genomes, that are
 extracted from one-letter aliases in gluing statistics.
