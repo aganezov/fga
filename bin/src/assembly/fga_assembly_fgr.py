@@ -417,7 +417,6 @@ def main(mgral_file, gene_mapping_file, gff_files, options):
                                                        gene_number_mapping[genome_key][int(v1[:-1])], v1)
             fragment2, d2 = find_fragment_by_extremity(genomes[genome_name],
                                                        gene_number_mapping[genome_key][int(v2[:-1])], v2)
-            # assert fragment1 != fragment2
             result[genome_name].append((fragment1, fragment2, d1, d2))
     chained_result = {}
     for genome_name in genomes:
