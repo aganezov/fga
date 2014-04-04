@@ -25,7 +25,7 @@ Idea:
     glued together and in which directions. Then each genome gets return as a new set of fragments, some of which are
     composed by a set of glued smaller fragments.
 
-    the --chain option allows to observe only those frgaments in the output, which were a result of at least one gluing
+    the -c/--chain option allows to observe only those frgaments in the output, which were a result of at least one gluing
     operation
 
     Example:
