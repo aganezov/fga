@@ -89,13 +89,13 @@ def main(orth_file, settings):
     Raises:
         IndexError, as retrieve_gene_family and retrieve_gene_id might raise one
     """
-
-    if hasattr(settings, "sorted") and settings.sorted:
+    if not settings.not_sorted:
         ####################################################################################
         # if we want to first sort gene families and then to map them to integers,
         # we have to use O(n) memory, and O(n*log(n)) time
         ####################################################################################
         data = orth_file.readlines()
+        data =data[1:] if data[0].startswith("ODBMOZ") else data
         data = list(map(lambda l: l.strip(), data))
         gfnm = create_gene_family_number_mapping(data)
         for entry in data:
@@ -109,6 +109,8 @@ def main(orth_file, settings):
         ####################################################################################
         gfnm = {}
         for line in orth_file:
+            if line.startswith("ODBMOZ"):
+                continue
             gene_family = retrieve_gene_family(line)
             gene_id = retrieve_gene_id(line)
             if gene_family not in gfnm:
@@ -128,9 +130,9 @@ if __name__ == "__main__":
         exit("-1")
     parser = argparse.ArgumentParser()
     parser.add_argument("orth_file", nargs="?", type=argparse.FileType("r"), default=sys.stdin,
-                        help="full path to orthology file. Format can be seen in examples section,"
-                             " in files with 'orth' prefix. Or just standard input.")
-    parser.add_argument("--not-sorted", action="store_false", default=True,
+                        help="full path to orthology file. Format can be seen in docs section,"
+                             " in orth section. Or just standard input.")
+    parser.add_argument("--not-sorted", dest="not_sorted", action="store_false", default=True,
                         help="first sorts all gene families and then maps them to integers, requires O(n) memory,"
                              "where n equals to the number of line in source")
     args = parser.parse_args()
