@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from bin.src.assembly import fga_assembly_fgr
+from src.assembly import fga_assembly_fgr
 
 __author__ = 'Sergey Aganezov Jr.'
 __email__ = 'aganezov@gwu.edu'

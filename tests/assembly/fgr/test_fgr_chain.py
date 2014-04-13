@@ -5,7 +5,7 @@ __author__ = 'Sergey Aganezov'
 __email__ = 'aganezov@gwu.edu'
 __status__ = 'develop'
 import unittest
-from bin.src.assembly import fga_assembly_fgr
+from src.assembly import fga_assembly_fgr
 
 
 class fgrConnectionCreationTestCase(unittest.TestCase):
