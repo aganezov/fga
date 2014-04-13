@@ -224,8 +224,11 @@ if __name__ == "__main__":
     parser.add_argument("orthology_file", nargs="?",  type=argparse.FileType("r"), default=sys.stdin,
                         help="full path to orthology files. Format can be seen in docs section,"
                              " in orth section. Or just standard input.")
-    parser.add_argument("-f", "--families_file", type=argparse.FileType("r"),
+    parser.add_argument("--bad-families-file", dest="bad_families_file", type=argparse.FileType("r"),
                         help="full file name with gene families ids to filter out",
+                        default=None)
+    parser.add_argument("--good-families-file", dest="good_families_file", type=argparse.FileType("r"),
+                        help="full file name with gene families ids to keep during filtration out",
                         default=None)
     parser.add_argument("-o", "--organisms_file", type=argparse.FileType("r"),
                         help="full file name with organisms names to keep",
