@@ -1,3 +1,4 @@
+#!/usr/local/bin/python3.4
 # -*- coding: utf-8 -*-
 from collections import defaultdict, Counter
 import itertools
@@ -12,7 +13,7 @@ __status__ = "develop"
 This script shall be invoked as a command line tool.
 This script is written with python3.4+ support.
 This script accepts only command line arguments.
-This script cannot be used in a Unix/Linux pipe.
+This script can be used in a Unix/Linux pipe, as it produces simple output, but must be invoked as a first producer.
 
 Idea:
     the main idea goes as follows. As gene family mapping has to be consistent among different phylogenetic tree
@@ -74,7 +75,7 @@ Input:
 
 Output:
     the script writes to the standard output
-    the script outputs only the inconsistent data
+    the script outputs only the orthology ids of inconsistent gene families
 
     Example:
         Orthology mapping file orthology_mapping_file_1 contained 0 gene families (out of 19000), where at least one
@@ -196,21 +197,21 @@ def main(source_files_list, dest=None):
                 miss_matched_gene_families_freq[key].append(o_id)
 
 
-        print("Orthology mapping file {file_name} contained {mgfc} gene families (out of {ogfc}), where at least"
-              " one gene was mapped, differently, from previously observed orthology mapping files."
-              "".format(file_name=source_file, mgfc=miss_matched_gene_families_cnt,
-                        ogfc=len(number_of_genes_per_family)),
-              file=dest)
+        # print("Orthology mapping file {file_name} contained {mgfc} gene families (out of {ogfc}), where at least"
+        #       " one gene was mapped, differently, from previously observed orthology mapping files."
+        #       "".format(file_name=source_file, mgfc=miss_matched_gene_families_cnt,
+        #                 ogfc=len(number_of_genes_per_family)),
+        #       file=dest)
 
         # for each file, that contains at least one gene family, that was miss-mapped, print detailed statistics
         if len(miss_matched_gene_families_freq) > 0:
-            print("Among miss-mapped gene families, there were", file=dest)
+            # print("Among miss-mapped gene families, there were", file=dest)
             for key, value in sorted(miss_matched_gene_families_freq.items(), key=lambda item: -item[0]):
-                print("\t{value} gene families have {key} miss-mapped genes. List of these families"
-                      "".format(value=len(value), key=key), file=dest)
-                tmp = map(lambda x: "{o_id} (out of {overall})".format(o_id=x, overall=number_of_genes_per_family[x]),
+                # print("\t{value} gene families have {key} miss-mapped genes. List of these families"
+                #       "".format(value=len(value), key=key), file=dest)
+                tmp = map(lambda x: "{o_id}".format(o_id=x),
                           value)
-                print("\t\t" + "\n\t\t".join(str_value for str_value in tmp), file=dest)
+                print("\n".join(str_value for str_value in tmp), file=dest)
 
 
 if __name__ == "__main__":
