@@ -89,7 +89,7 @@ def main(orth_file, settings):
     Raises:
         IndexError, as retrieve_gene_family and retrieve_gene_id might raise one
     """
-    if not settings.not_sorted:
+    if settings.sorted:
         ####################################################################################
         # if we want to first sort gene families and then to map them to integers,
         # we have to use O(n) memory, and O(n*log(n)) time
@@ -132,8 +132,8 @@ if __name__ == "__main__":
     parser.add_argument("orth_file", nargs="?", type=argparse.FileType("r"), default=sys.stdin,
                         help="full path to orthology file. Format can be seen in docs section,"
                              " in orth section. Or just standard input.")
-    parser.add_argument("--not-sorted", dest="not_sorted", action="store_false", default=True,
-                        help="first sorts all gene families and then maps them to integers, requires O(n) memory,"
-                             "where n equals to the number of line in source")
+    parser.add_argument("--non-sorted", dest="sorted", action="store_false", default=True,
+                        help="streams all rows from supplied stream/file as is, whithout first filtering them by gene"
+                             " family name first (disabled by default)")
     args = parser.parse_args()
     main(orth_file=args.orth_file, settings=args)
