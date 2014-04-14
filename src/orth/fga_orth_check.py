@@ -1,4 +1,4 @@
-#!/usr/local/bin/python3.4
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 from collections import defaultdict, Counter
 import itertools
