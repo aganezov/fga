@@ -178,9 +178,13 @@ def filter_organisms(data, good_organisms=None, bad_organisms=None):
     for entry in data:
         organism_name = retrieve_organism(entry)
         good = True
-        if good_organisms is not None and (organism_name not in good_organisms and organism_name.split(" ")[1] not in good_organisms):
+        if good_organisms is not None\
+                and (organism_name not in good_organisms
+                     and (len(organism_name.split(" ")) > 1 and organism_name.split(" ")[1] not in good_organisms)):
             good = False
-        if bad_organisms is not None and (organism_name in bad_organisms or organism_name.split(" ")[1] in bad_organisms):
+        if bad_organisms is not None\
+                and (organism_name in bad_organisms
+                     or (len(organism_name.split(" ")) > 1 and organism_name.split(" ")[1] in bad_organisms)):
             good = False
         if good:
             yield entry
@@ -208,11 +212,17 @@ def main(mapping_file, bad_families_file=None, good_families_file=None,
             for line in bad_families_file:
                 bad_families.add(line.strip())
         data = list(filter_gene_families(data=data, bad_gene_families=bad_families, good_gene_families=good_families))
-    if good_organisms_file is not None:
-        good_organisms = set()
-        for line in good_organisms_file:
-            good_organisms.add(line.strip())
-        data = list(filter_organisms(data=data, good_organisms=good_organisms))
+    if good_organisms_file is not None or bad_organisms_file is not None:
+        good_organisms, bad_organisms = None, None
+        if good_organisms_file is not None:
+            good_organisms = set()
+            for line in good_organisms_file:
+                good_organisms.add(line.strip())
+        if bad_organisms_file is not None:
+            bad_organisms = set()
+            for line in bad_organisms_file:
+                bad_organisms.add(line.strip())
+        data = list(filter_organisms(data=data, good_organisms=good_organisms, bad_organisms=bad_organisms))
     if hasattr(settings, "unique") and settings.unique:
         good_families = get_unique_gene_families(data)
         data = list(filter_gene_families(data=data, good_gene_families=good_families))
@@ -221,17 +231,20 @@ def main(mapping_file, bad_families_file=None, good_families_file=None,
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("orthology_file", nargs="?",  type=argparse.FileType("r"), default=sys.stdin,
+    parser.add_argument("orthology_file", nargs="?", type=argparse.FileType("r"), default=sys.stdin,
                         help="full path to orthology files. Format can be seen in docs section,"
                              " in orth section. Or just standard input.")
     parser.add_argument("--bad-families-file", dest="bad_families_file", type=argparse.FileType("r"),
                         help="full file name with gene families ids to filter out",
                         default=None)
     parser.add_argument("--good-families-file", dest="good_families_file", type=argparse.FileType("r"),
-                        help="full file name with gene families ids to keep during filtration out",
+                        help="full file name with gene families ids to keep during filtration",
                         default=None)
-    parser.add_argument("-o", "--organisms_file", type=argparse.FileType("r"),
-                        help="full file name with organisms names to keep",
+    parser.add_argument("--good-organisms-file", dest="good_organisms_file", type=argparse.FileType("r"),
+                        help="full file name with organisms names to keep during filtration",
+                        default=None)
+    parser.add_argument("--bad-organisms-file", dest="bad_organisms_file", type=argparse.FileType("r"),
+                        help="full file name with organisms names to filter out",
                         default=None)
     group = parser.add_mutually_exclusive_group()
     group.add_argument("-u", "--unique", action="store_true", default=False, help="Keeps only gene families, that are,"
@@ -240,4 +253,8 @@ if __name__ == "__main__":
     group.add_argument("-i", "--indels", help="doesn't work yet =(", action="store_true")
     group.add_argument("-d", "--duplications", help="doesn't work yet =(", action="store_true")
     args = parser.parse_args()
-    main(args.orthology_file, bad_families_file=args.families_file, good_organisms_file=args.organisms_file, settings=args)
+    main(args.orthology_file,
+         bad_families_file=args.bad_families_file,
+         good_families_file=args.good_families_file,
+         bad_organisms_file=args.bad_organismss_file,
+         good_organisms_file=args.good_organisms_file, settings=args)
