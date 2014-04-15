@@ -13,9 +13,9 @@ were written to be used as command line stand alone tools.
 In general, all software is divided into following categories:
 
 1. **orth** - this set of scripts deals with data, that contains information about orthology relationship among genomes
-    (gene families). More on particular script usage and data format in [orthology section](#orth)
+    (gene families). More on particular script usage and data format in [orthology section](#Orthology)
 2. **gene** - this set of scripts deals with data, that contains information about coding exons and fragments in each
-    genome. More on particular script usage and data format in [gene section](#gene)
+    genome. More on particular script usage and data format in [gene section](#Gene)
 3. **assembly** - this set of scripts deals with data, that contains information about assembled statistics, among genomes
     More on particular script usage and data format in [assembly section](assembly)
 
@@ -34,10 +34,10 @@ As each script was meant to be standalone and not dependent on any other package
 contains some duplication in terms of support functions.
 
 
-# <a id="orth"></a>Orthology
+# Orthology
 
 This section covers all scripts that can be found in ``orth`` python package in root ``src`` package. This scripts are
-designed to process orthologous data, that is presented in tab-separated text format. All scripts assumes some thigngs about
+designed to process orthologous data, that is presented in tab-separated text format. All scripts assumes some things about
 supplied data, but all those bottlenecks can be easily generalized.
 
 Assumptions:
@@ -218,3 +218,91 @@ this script expects exactly two arguments, which suppose to provide full paths t
  file has to be checked against the first one.
 
 [3]:https://github.com/sergey-aganezov-jr/fga/blob/master/src/orth/fga_orth_check.py
+
+
+# Gene
+
+This section covers all scripts that can be found in ``gene`` python package in root ``src`` package. This scripts are
+designed to process gff formatted data, that is presented in gff format. All scripts assumes that gff formatted files
+have only correct info. More of gff format can be read [here](http://www.ensembl.org/info/website/upload/gff.html).
+The only assumption, is that on the 11th column we'll have a **gene id** information, which is used wildly in these
+ scripts.
+
+When we talk about **gene <-> number mapping**  files, we assume the following format:
+
+    gene_id integer_value
+
+We assume two space-separated words, of which second consists of only digit (as it will be casted to integer value)
+
+
+## [fga_gene_filter.py][4]
+
+This script is designed for simple filtration of gff formatted files, which in this study were representing information
+about particular gene ids location in each genome. There are several filtration available with this script:
+
+* **good** / **bad** gene ids filter: as files with those values can be supplied for this script, one can filter out all
+unwanted gene ids from supplied gff formatted data. It is important to notice, that **bad** filtration set will always
+ dominate a good one.
+
+As same gene can be represented as a sequence of coding exons, and, for the purpose of genome rearrangement perspective,
+ we'd like to represent each gene with a single coding exon. There are several options available for rewriting coding
+  exons:
+
+1. median coordinates rewriting: for each gene we determine call coding exons. After that, for each coding exon
+ we determine a median base pair coordinate. And the resulting coordinate for particular gene is computed as median of
+  previously computed medians. Results are written into start and end coordinates of respective coding exon sequences.
+
+2. sorting: on all coding fragments (first column sequences ids) script performs sorting of coding exons, using their
+start and end coordinates.
+
+3. tandem duplication elimination: if, there are several coding sequences are following each other, they'll be
+represented with a single instance in the resulted data
+
+in terms of order, filtration and rewriting is performed in the following order:
+
+1. gene id filtration, using **bad** and **good** gene id sets
+2. median coordinates rewriting
+3. bp coordinates sorting
+4. tandem duplication filtration
+
+#### Usage
+
+    fga_gene_filter.py gff_file
+
+    cat gff_file | fga_gene_filter.py
+
+Such call will simply output supplied data in gff format.
+
+As ``-h/--help`` options states:
+
+    usage: fga_gene_filter.py [-h] [--good-gene-ids-file GOOD_GENE_IDS_FILE]
+                          [--bad-gene-ids-file BAD_GENE_IDS_FILE]
+                          [--no-tandem-filtration] [--non-sorted] [-m] [-c]
+                          [gff_file]
+
+    positional arguments:
+      gff_file              full path to gff file. Format can be seen in docs
+                            section, in gene section. Or just standard input.
+
+    optional arguments:
+      -h, --help            show this help message and exit
+      --good-gene-ids-file GOOD_GENE_IDS_FILE
+                            full file name with gene ids to be kept during
+                            filtration
+      --bad-gene-ids-file BAD_GENE_IDS_FILE
+                            full file name with gene ids to be filtered out during
+                            filtration
+      --no-tandem-filtration
+                            stops substituting of every tandem duplication of gene
+                            ids, with just one copy
+      --not-sorted          prevents sorting of coding exons on respective
+                            fragments
+      -m, --median          rewrites each gene ids coordinates with median of
+                            median among all same gene ids coordinates
+      -c, --continuous      doesn't work yet =(
+
+the script expect a full path to gff formatted file, or standard input. Byt the options flags, one can see, that bp
+coordinates sorting is enabled by default, tandem filtration is enabled by default. While median coordinates rewriting
+has to be invoked explicitly.
+
+[4]:https://github.com/sergey-aganezov-jr/fga/blob/master/src/gene/fga_gene_filter.py
