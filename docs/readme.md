@@ -306,3 +306,60 @@ coordinates sorting is enabled by default, tandem filtration is enabled by defau
 has to be invoked explicitly.
 
 [4]:https://github.com/sergey-aganezov-jr/fga/blob/master/src/gene/fga_gene_filter.py
+
+## [fga_gene_mgra_i.py][5]
+
+This script is designed to perform transition from gff formatted data into mgra suitable format. As mgra software
+expects genomes in grimm/infercars format, this script, taking **gene<->number mapping** file and gff formatted files,
+and outputs genomes, represented as a set of fragments, where each fragment is represented as a sorted sequence of gene
+ families. For now scripts outputs only grimm based format. More on grimm format can be found
+ [here](http://grimm.ucsd.edu/GRIMM/).
+ For the purpose of translating gff formatted data into gene family notation, suitable for mgra, script requires
+ a **gene<-> number mapping** file, which wil contain at least all gene ids, that will be found in gff formatted files
+ (can contain more, but not less, as KeyError would be raised and script will fail during execution).
+
+Scripts derives genome names from the base name of supplied gff formatted files. The algorithm for name deriving is
+ as follows:
+
+1. Get string, which precedes the last ``.`` char (omit the extension)
+2. Get string, which in previous result, precedes the first ``_`` char, if any.
+
+
+#### Usage
+
+    fga_gene_mgra_i.py gene_number_mapping gff_file_one gff_file_two ...
+
+This call will output the contents of gff\_file\_one and gff\_file\_two which will be suitable fo mgra. The output will
+be as follows:
+
+    >gff_file_one
+    # content of gff_file_one
+
+    >gff_file_two
+    # content of gff_file_two
+
+Script doesn't perform any additional work on supplied data, besides sorting it based on respective base pair
+coordinates.
+
+As ``-h/--help`` option states:
+
+    usage: fga_gene_mgra_i.py [-h]
+                          gene_number_mapping_file gff_files [gff_files ...]
+
+    positional arguments:
+      gene_number_mapping_file
+                            full path to gene number mapping file. Format can be
+                            seen in docs section,in gene section.
+      gff_files             full path to gff files for different genomes
+
+    optional arguments:
+      -h, --help            show this help message and exit
+
+Script expects **gene<->number mapping** file as it first argument and, as stated above, all gene ids, that would be
+found in further analysed gff formatted data must be in the **gene<->number mapping** file.
+Script expects at least one gff formatted file, as it second and further positional arguments. Script doesn't read from
+standard input, as it tries to determine genome names from supplied gff formatted file names.
+
+
+[5]:https://github.com/sergey-aganezov-jr/fga/blob/master/src/gene/fga_gene_mgra_i.py
+
