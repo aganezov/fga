@@ -243,6 +243,7 @@ def main(gff_file, good_gene_ids_file=None, bad_gene_ids_file=None, settings=Non
     if hasattr(settings, "median") and settings.median:
         gene_median_coordinates = get_genes_median_coordinates(data)
         data = list(rewrite_gene_coordinates(data, gene_median_coordinates))
+    if hasattr(settings, "sorted") and settings.sorted:
         data = sorted(data,
                       key=lambda entry: (retrieve_fragment(entry), retrieve_start(entry), retrieve_end(entry)))
     if hasattr(settings, "tandem_filtration") and settings.tandem_filtration:
@@ -263,6 +264,8 @@ if __name__ == "__main__":
                         dest="bad_gene_ids_file", default=None)
     parser.add_argument("--no-tandem-filtration", dest="tandem_filtration", action="store_false", default=True,
                         help="stops substituting of every tandem duplication of gene ids, with just one copy")
+    parser.add_argument("--not-sorted", default=True, action="store_false",
+                        dest="sorted", help="prevents sorting of coding exons on respective fragments")
     parser.add_argument("-m", "--median", action="store_true", default=False,
                         help="rewrites each gene ids coordinates with median of median among all same "
                              "gene ids coordinates")
