@@ -13,11 +13,11 @@ were written to be used as command line stand alone tools.
 In general, all software is divided into following categories:
 
 1. **orth** - this set of scripts deals with data, that contains information about orthology relationship among genomes
-    (gene families). More on particular script usage and data format in [orthology section](#Orthology)
+    (gene families). More on particular script usage and data format in [orthology section](#orthology)
 2. **gene** - this set of scripts deals with data, that contains information about coding exons and fragments in each
-    genome. More on particular script usage and data format in [gene section](#Gene)
+    genome. More on particular script usage and data format in [gene section](#gene)
 3. **assembly** - this set of scripts deals with data, that contains information about assembled statistics, among genomes
-    More on particular script usage and data format in [assembly section](assembly)
+    More on particular script usage and data format in [assembly section](#assembly)
 
 Each set is contained in a respectively named python package. All scripts are written to be invoked as standalone command
 line tools. All scripts write to standard output, thus can be used as unix pipes sources. Some scripts can read from standard
