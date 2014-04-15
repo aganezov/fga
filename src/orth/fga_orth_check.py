@@ -3,6 +3,7 @@
 from collections import defaultdict, Counter
 import itertools
 import sys
+import argparse
 
 __author__ = "Sergey Aganezov"
 __email__ = "aganezov@gwu.edu"
@@ -112,34 +113,34 @@ def retrieve_info_from_string(raw_data_string):
     return data[1], data[3], data[4]
 
 
-def split_file_by_o_ids(file_name):
+def split_file_by_o_ids(source):
     """ Parses original file, retrieves relative information, that splits overall data according to orthology ids
 
     starting with row 2, as first row must be dedicated to column naming
     skips line, that were not be properly processed with retrieving information procedure
 
     Args:
-        file_name: source orthology tabtext (tab separated text) file.
+        source: file-like object with data
 
     Returns:
             defaultdict: {gene family id: list of tuples (gene ids, organisms name)}
     """
-    with open(file_name, "r") as source:
-        o_id_splitting = defaultdict(list)
-        data = source.readlines()
-        retrieved_data = []
-        for cnt, line in enumerate(data):
-            if cnt > 0:
-                try:
-                    retrieved_data.append(retrieve_info_from_string(line))
-                except IndexError:
-                    continue
-        for o_id, g_id, organism in retrieved_data:
-            o_id_splitting[o_id].append((g_id, organism))
-        return o_id_splitting
+    o_id_splitting = defaultdict(list)
+    data = source.readlines()
+    retrieved_data = []
+    for cnt, line in enumerate(data):
+        if cnt > 0:
+            try:
+                retrieved_data.append(retrieve_info_from_string(line))
+            except IndexError:
+                continue
+    for o_id, g_id, organism in retrieved_data:
+        o_id_splitting[o_id].append((g_id, organism))
+    return o_id_splitting
 
 
-def main(source_files_list, dest=None):
+def main(first_file, second_file, dest=None):
+    source_files_list = [first_file, second_file]
     gene_family_id_mapping = {}
     gene_id_mapping = defaultdict(dict)
 
@@ -215,11 +216,13 @@ def main(source_files_list, dest=None):
 
 
 if __name__ == "__main__":
-    cmd_args = sys.argv[1:]
-    if len(cmd_args) != 2:
-        sys.exit(-1)      #  for now program works with only two orthology mapping files
-    orthology_source_files = cmd_args
-    main(orthology_source_files)
+    parser = argparse.ArgumentParser()
+    parser.add_argument("first_orthology_file", type=argparse.FileType("r"),
+                        help="Full path to first orthology mapping file")
+    parser.add_argument("second_orthology_mapping", type=argparse.FileType("r"),
+                        help="Full path to second orthology mapping file to check against first")
+    args = parser.parse_args()
+    main(first_file=args.first_orthology_file, second_file=args.second_orthology_mapping)
 
 
 
