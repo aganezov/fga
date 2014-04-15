@@ -152,6 +152,8 @@ a part of, was previously assigned to.
 Such call will stream supplied data as is. The ``--non-sorted`` option was disabled by default, as it comes more often
 than not, to have consistency in terms of that mapping in regards of supplied data.
 
+As ``-h/--help`` option states:
+
     usage: fga_orth_gnm.py [-h] [--non-sorted] [orth_file]
 
     positional arguments:
@@ -164,4 +166,53 @@ than not, to have consistency in terms of that mapping in regards of supplied da
                     first filtering them by gene family name first (disabled by
                     default)
 
+for this script there must be either an input stream, or a full path to file, that contains data for creating gene-number
+mapping.
+
 [2]:https://github.com/sergey-aganezov-jr/fga/blob/master/src/orth/fga_orth_gnm.py
+
+## [fga_orth_check.py][3]
+
+This script is designed for simple pairwise check of different orthology sets. In other terms, it check if same
+genes from different organisms grouped in same families across different data files.
+
+The main idea is as follows: for each gene family in first supplied file, determine which genes from which organisms,
+ are mapped to this family. Assign same value to gene family and all genes that belong to it. For the second file do
+ the same procedure, derive data in different chunks of gene families. For each gene family get all gene that belong
+ to it in second data set. Get a value for this gene family as the most encountered in terms of what genes in this
+ family were mapped in first file. Once the value is derived, check if there some gene in observed family, that were
+ mapped differently. If there's at least one so gene - report the gene family, as the one having a miss-map.
+
+#### Usage
+
+    fga_orth_check.py ODB_file_1 ODB_file_2
+
+Such call will take all supplied data in, determine gene family <-> gene id mapping based on first file, and then check
+gene families in the second file. The output of this script is value from second column (gene families names) in file
+``ODB_file_2`` that have at least one gene id miss mapped based on file one. So if one want to perform same analysis,
+ based on different orhtology datasets, and wants to be sure in that initial data is consistent among those datasets,
+ they should perform the following command sequence to collect all unreliable gene families:
+
+    fga_orth_check.py ODB_file_1 ODB_file_2 > bad_gene_families
+
+    fga_orth_check.py ODB_file_2 ODB_file_1 >> bad_gene_families
+
+these calls will collect all gene families names, that contain anything inconsistent in them. Using
+``fga_orth_filter.py`` after this with ``--bad-families-file`` option pointing to ``bad_gene_families`` file on both
+ those ODB files would produce consistent with each other orthology mapping files.
+
+As ``-h/--help`` option states:
+
+    usage: fga_orth_check.py [-h] first_orthology_file second_orthology_mapping
+
+    positional arguments:
+      first_orthology_file  Full path to first orthology mapping file
+      second_orthology_mapping
+                            Full path to second orthology mapping file to check
+                            against first
+
+    optional arguments:
+      -h, --help            show this help message and exit
+
+this script expects exactly two arguments, which suppose to provide full paths to orthology mapping files, where second
+ file has to be checked against the first one.
