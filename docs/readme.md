@@ -216,3 +216,5 @@ As ``-h/--help`` option states:
 
 this script expects exactly two arguments, which suppose to provide full paths to orthology mapping files, where second
  file has to be checked against the first one.
+
+[3]:https://github.com/sergey-aganezov-jr/fga/blob/master/src/orth/fga_orth_check.py
