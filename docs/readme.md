@@ -13,9 +13,9 @@ were written to be used as command line stand alone tools.
 In general, all software is divided into following categories:
 
 1. **orth** - this set of scripts deals with data, that contains information about orthology relationship among genomes
-    (gene families). More on particular script usage and data format in [orthology section](#orthology)
+    (gene families). More on particular script usage and data format in [orthology section](https://github.com/sergey-aganezov-jr/fga/tree/master/docs#orthology)
 2. **gene** - this set of scripts deals with data, that contains information about coding exons and fragments in each
-    genome. More on particular script usage and data format in [gene section](#gene)
+    genome. More on particular script usage and data format in [gene section](https://github.com/sergey-aganezov-jr/fga/tree/master/docs#gene)
 3. **assembly** - this set of scripts deals with data, that contains information about assembled statistics, among genomes
     More on particular script usage and data format in [assembly section](#assembly)
 
