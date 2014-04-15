@@ -226,15 +226,20 @@ def rewrite_gene_coordinates(data, gene_id_coordinates_storage):
         yield entry
 
 
-def main(gff_file, good_gene_file=None, settings=None):
-
+def main(gff_file, good_gene_ids_file=None, bad_gene_ids_file=None, settings=None):
     data = gff_file.readlines()
     data = list(map(lambda x: x.strip(), data))
-    if good_gene_file is not None:
-        good_gene_ids = set()
-        for line in good_gene_file:
-            good_gene_ids.add(line.strip())
-        data = list(filter_by_gene_ids(data, good_gene_ids=good_gene_ids))
+    if good_gene_ids_file is not None or bad_gene_ids_file is not None:
+        good_gene_ids , bad_gene_ids = None, None
+        if good_gene_ids_file is not None:
+            good_gene_ids = set()
+            for line in good_gene_ids_file:
+                good_gene_ids.add(line.strip())
+        if bad_gene_ids_file is not None:
+            bad_gene_ids = set()
+            for line in bad_gene_ids_file:
+                bad_gene_ids.add(line.strip())
+        data = list(filter_by_gene_ids(data, good_gene_ids=good_gene_ids, bad_gene_ids=bad_gene_ids))
     if hasattr(settings, "median") and settings.median:
         gene_median_coordinates = get_genes_median_coordinates(data)
         data = list(rewrite_gene_coordinates(data, gene_median_coordinates))
@@ -250,8 +255,12 @@ if __name__ == "__main__":
     parser.add_argument("gff_file", nargs="?", type=argparse.FileType("r"), default=sys.stdin,
                         help="full path to gff file. Format can be seen in docs section,"
                              " in gene section. Or just standard input.")
-    parser.add_argument("--gene_file", type=argparse.FileType("r"), help="full file name with gene ids to keep",
-                        default=None)
+    parser.add_argument("--good-gene-ids-file", type=argparse.FileType("r"), help="full file name with gene ids to be"
+                                                                                  " kept during filtration",
+                        dest="good_gene_ids_file", default=None)
+    parser.add_argument("--bad-gene-ids-file", type=argparse.FileType("r"), help="full file name with gene ids to"
+                                                                                 " be filtered out during filtration",
+                        dest="bad_gene_ids_file", default=None)
     parser.add_argument("--no-tandem-filtration", dest="tandem_filtration", action="store_false", default=True,
                         help="stops substituting of every tandem duplication of gene ids, with just one copy")
     parser.add_argument("-m", "--median", action="store_true", default=False,
@@ -259,4 +268,5 @@ if __name__ == "__main__":
                              "gene ids coordinates")
     parser.add_argument("-c", "--continuous", help="doesn't work yet =(", action="store_true")
     args = parser.parse_args()
-    main(gff_file=args.gff_file, good_gene_file=args.gene_file, settings=args)
+    main(gff_file=args.gff_file, good_gene_ids_file=args.good_gene_ids_file, bad_gene_ids_file=args.bad_gene_ids_file,
+         settings=args)
