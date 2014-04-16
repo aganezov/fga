@@ -119,15 +119,6 @@ def main(orth_file, settings):
 
 
 if __name__ == "__main__":
-    python_version = sys.version_info
-    if python_version.major < 3:
-        print("This script is suitable for only python 3.3+", file=sys.stderr)
-        print("Your python version is", ",".join(map(str, python_version)), file=sys.stderr)
-        exit("-1")
-    if python_version.major == 3 and python_version.minor < 3:
-        print("This script is suitable for only python 3.3+", file=sys.stderr)
-        print("Your python version is", "-".join(map(str, python_version)), file=sys.stderr)
-        exit("-1")
     parser = argparse.ArgumentParser()
     parser.add_argument("orth_file", nargs="?", type=argparse.FileType("r"), default=sys.stdin,
                         help="full path to orthology file. Format can be seen in docs section,"
