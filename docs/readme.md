@@ -258,33 +258,35 @@ As some gene can be represented as a sequence gene ids, and, from the genome rea
      we determine a median base pair coordinate. And the resulting coordinate for particular gene is computed as median of
       previously computed medians. Results are written into start and end coordinates of respective coding exon sequences.
 
-        Example:
-        assume one has 3 identical gene ids AAA111 in some genome on same fragment with coordinates:
 
-        1. start = 0, end = 5
-        2. start = 20, end = 25
-        3. start = 40, end = 45
+    Example:
+    assume one has 3 identical gene ids AAA111 in some genome on same fragment with coordinates:
 
-        this option will rewrite for each of those gene ids their start and end coordinates as 22.5, as it equals to
+    1. start = 0, end = 5
+    2. start = 20, end = 25
+    3. start = 40, end = 45
 
-        ((0 + 5) / 2 + (20 + 25) / 2 + (40 + 45) / 2 ) / 3
+    this option will rewrite for each of those gene ids their start and end coordinates as 22.5, as it equals to
 
-         co called median of median
+    ((0 + 5) / 2 + (20 + 25) / 2 + (40 + 45) / 2 ) / 3
 
- 2. **tandem filtration**: if, there are several gene ids, that are following each other in terms of their bp coordinates,
+    co called median of median
+
+2. **tandem filtration**: if, there are several gene ids, that are following each other in terms of their bp coordinates,
   they'll be represented with a single instance in the resulted data
 
-        Example:
-        assume one has 3 identical gene ids AAA111 in some genome on same fragment that form a contiguous sequence (as
-         there are no other gene ids, that, based on their coordinates would be in between AAA111 ids after sorting)
 
-        ... AAA111 AAA111 AAA111 ...
+    Example:
+    assume one has 3 identical gene ids AAA111 in some genome on same fragment that form a contiguous sequence (as
+     there are no other gene ids, that, based on their coordinates would be in between AAA111 ids after sorting)
 
-        this option will rewrite such gene ids as
+    ... AAA111 AAA111 AAA111 ...
 
-        ... AAA111 ...
+    this option will rewrite such gene ids as
 
-        leaving only one instance from each such contiguous sequence of same gene ids
+    ... AAA111 ...
+
+    leaving only one instance from each such contiguous sequence of same gene ids
 
 in terms of order, filtration and rewriting are performed in the following order:
 
