@@ -361,13 +361,13 @@ As ``-h/--help`` options states:
                             full file name with gene ids to be filtered out during
                             filtration
       --tandem-filtration   substitutes every tandem duplication of gene ids, with
-                            just one copy.
-      --sorted              sorts all coding exons, that survived filtration, on
+                            just one copy
+      --sorted              sorts all gene ids, that survived filtration, on
                             respective fragments
       -m, --median          rewrites each gene ids coordinates with median of
                             median among all same gene ids coordinates
-      -c, --continuous      filters out all coding exons, that, if being sorted by
-                            bp coordinates, don't form a contiguous sequence
+      -c, --continuous      filters out all gene ids, that, if being sorted by bp
+                            coordinates, don't form a contiguous sequence
 
 the script expect a full path to gff formatted file, or standard input.
 
