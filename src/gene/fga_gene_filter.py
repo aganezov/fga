@@ -221,16 +221,44 @@ def rewrite_gene_coordinates(data, gene_id_coordinates_storage):
         start = retrieve_start(entry)
         end = retrieve_end(entry)
         gene_id = retrieve_gene_id(entry)
-        entry = entry.replace("\t"+str(start)+"\t", "\t" + str(int(gene_id_coordinates_storage[gene_id])) + "\t")
-        entry = entry.replace("\t"+str(end)+"\t", "\t" + str(int(gene_id_coordinates_storage[gene_id])) + "\t")
+        entry = entry.replace("\t" + str(start) + "\t", "\t" + str(int(gene_id_coordinates_storage[gene_id])) + "\t")
+        entry = entry.replace("\t" + str(end) + "\t", "\t" + str(int(gene_id_coordinates_storage[gene_id])) + "\t")
         yield entry
+
+
+def retrieve_non_continuous_gene_ids(data):
+    """ Scans among supplied data iterable and retrieves gene id names, that might be found in non contiguous sequences
+
+    If gene ids appear as a non contiguous sequence in terms of bp coordinates, this function reports such gene id
+
+    Args:
+        data: iterable, that is suitable for retrieve_gene_id function
+
+    Returns:
+        set of gene ids, that were identified as being not just in contiguous sequences
+
+    Raises:
+        IndexError: as retrieve_gene_id might raise one
+    """
+    result = set()
+    visited = {}
+    previous_gene_id = retrieve_gene_id(data[0])
+    visited[previous_gene_id] = True
+    for entry in data[1:]:
+        gene_id = retrieve_gene_id(entry)
+        if gene_id != previous_gene_id:
+            if gene_id in visited:
+                result.add(gene_id)
+            previous_gene_id = gene_id
+            visited[gene_id] = True
+    return result
 
 
 def main(gff_file, good_gene_ids_file=None, bad_gene_ids_file=None, settings=None):
     data = gff_file.readlines()
     data = list(map(lambda x: x.strip(), data))
     if good_gene_ids_file is not None or bad_gene_ids_file is not None:
-        good_gene_ids , bad_gene_ids = None, None
+        good_gene_ids, bad_gene_ids = None, None
         if good_gene_ids_file is not None:
             good_gene_ids = set()
             for line in good_gene_ids_file:
@@ -240,6 +268,11 @@ def main(gff_file, good_gene_ids_file=None, bad_gene_ids_file=None, settings=Non
             for line in bad_gene_ids_file:
                 bad_gene_ids.add(line.strip())
         data = list(filter_by_gene_ids(data, good_gene_ids=good_gene_ids, bad_gene_ids=bad_gene_ids))
+    if hasattr(settings, "continuous") and settings.continuous:
+        tmp_data = sorted(data,
+                          key=lambda entry: (retrieve_fragment(entry), retrieve_start(entry), retrieve_end(entry)))
+        non_continuous_gene_ids = retrieve_non_continuous_gene_ids(tmp_data)
+        data = list(filter_by_gene_ids(data, bad_gene_ids=non_continuous_gene_ids))
     if hasattr(settings, "median") and settings.median:
         gene_median_coordinates = get_genes_median_coordinates(data)
         data = list(rewrite_gene_coordinates(data, gene_median_coordinates))
@@ -247,6 +280,8 @@ def main(gff_file, good_gene_ids_file=None, bad_gene_ids_file=None, settings=Non
         data = sorted(data,
                       key=lambda entry: (retrieve_fragment(entry), retrieve_start(entry), retrieve_end(entry)))
     if hasattr(settings, "tandem_filtration") and settings.tandem_filtration:
+        data = sorted(data,
+                      key=lambda entry: (retrieve_fragment(entry), retrieve_start(entry), retrieve_end(entry)))
         data = list(filter_tandem_duplication(data))
     print("\n".join(data))
 
@@ -262,14 +297,18 @@ if __name__ == "__main__":
     parser.add_argument("--bad-gene-ids-file", type=argparse.FileType("r"), help="full file name with gene ids to"
                                                                                  " be filtered out during filtration",
                         dest="bad_gene_ids_file", default=None)
-    parser.add_argument("--no-tandem-filtration", dest="tandem_filtration", action="store_false", default=True,
-                        help="stops substituting of every tandem duplication of gene ids, with just one copy")
-    parser.add_argument("--not-sorted", default=True, action="store_false",
-                        dest="sorted", help="prevents sorting of coding exons on respective fragments")
+    parser.add_argument("--tandem-filtration", dest="tandem_filtration", action="store_true", default=False,
+                        help="substitutes every tandem duplication of gene ids, with just one copy. "
+                             "Enables \"--sorted key\"")
+    parser.add_argument("--sorted", default=False, action="store_true",
+                        dest="sorted", help="sorts all coding exons, that survived filtration, on respective fragments")
     parser.add_argument("-m", "--median", action="store_true", default=False,
                         help="rewrites each gene ids coordinates with median of median among all same "
                              "gene ids coordinates")
-    parser.add_argument("-c", "--continuous", help="doesn't work yet =(", action="store_true")
+    parser.add_argument("-c", "--continuous", default=False, dest="continuous",
+                        help="filters out all coding exons, that, if being sorted by bp coordinates,"
+                             " don't form a contiguous sequence",
+                        action="store_true")
     args = parser.parse_args()
     main(gff_file=args.gff_file, good_gene_ids_file=args.good_gene_ids_file, bad_gene_ids_file=args.bad_gene_ids_file,
          settings=args)
