@@ -360,6 +360,85 @@ found in further analysed gff formatted data must be in the **gene<->number mapp
 Script expects at least one gff formatted file, as it second and further positional arguments. Script doesn't read from
 standard input, as it tries to determine genome names from supplied gff formatted file names.
 
-
 [5]:https://github.com/sergey-aganezov-jr/fga/blob/master/src/gene/fga_gene_mgra_i.py
+
+# Assembly
+
+This section covers all scripts that can be found in ``assembly`` python package in root ``src`` package. These scripts
+are designed to process MGRA log files, and input raw files in conjunction, to output a readable information, about the
+assembled info, that was gained by using genome rearrangement analysis tools, to perform gluing among different
+ fragments in highly fragmented genomes.
+
+MGRA log like file is expected to contain specifically formatted data. There shall be rows of two types:
+
+ 1. ``A=ABCD=Abcdefg``: this row represents so called genome aliases definition. It states three value, first of which
+ will be used to determine in which genome particular gluing operations happened. Second four letter value determines
+ the relationship between gene id mapped to some value and genome, it belongs to. Third value stands for the full genome
+ name that will be obtained by processing basename of supplied gff formatted file.
+ 2. ``(12h, oo)x(11t, oo):{A}``: this row represents information about gluing operation in particular genome. One letter
+    alias in brackets, while digital value prefixing ``h`` or ``t`` letter represents an end of outer-most synteny
+     blocks of some fragments, that were glued together.
+
+In MGRA log like file script expects to find genome aliases definition for at least all one letter aliases, that could
+be found in gluing operation.
+
+Output format:
+
+    genome_1
+        fragment_1 (+) <==> fragment_2 (-)
+
+All rows that don't have tabulation in beginning, contain only genome name. All rows that start with tabulation
+character, contain at least one fragment name from last mentioned genome (obtained from first column of
+ gff formatted files). The ``+`` or ``-`` sign determines if fragment has to be oriented positively, or
+  is it has to be reversed (``-`` sign can be found only in assembled chains of length at
+ least 2). If any number of fragments in one row is followed by ``<==>``, this means that previously mentioned
+ sequence of fragments was glued together with a fragment, that follows the ``<==>``. In the example above
+ ``fragment_1`` oriented naturally, was glued with ``fragment_2`` in reversed position. In other terms, if each
+ fragment can be represented as a pair of ``start`` and ``end`` values, example above shows that ``end`` of
+ ``fragment_1`` was glued together with ``end`` of ``fragment_2``.
+
+## Usage
+
+    fga_assmebly_fgr.py mgra_log_file gene_number_mapping_file gff_file_one gff_file_two ...
+
+This call will analyse mgra log like file, obtain information about which fragments were glued with which fragments,
+and in which genomes, than, using the information from gene_number_mapping file, it will translate mgra integer based
+synteny blocks names, into the gene_ids based name. Using the knowledge if which gene ids were used in gluing operations,
+script determines from which fragments in which genomes were those gene ids. Script double checks, that those gene ids
+ indeed represents the outermost gene ids on respective fragments and that there are no cases of fragment being glued to
+ another end of itself, or that some fragment took place in more than 2 gluing operations, as it has only two
+ extremities, thus only two possible options to participate in gluing operations. After determining which fragments
+ were assembled together script reports them as glued together chains.
+
+As ``-h/--help`` option states:
+
+    usage: fga_assembly_fgr.py [-h] [-c]
+                           mgral_file gene_num_mapping_file gff_files
+                           [gff_files ...]
+
+    positional arguments:
+      mgral_file            full path to mgra like log file with information about
+                            glued vertices
+      gene_num_mapping_file
+                            full path to gene mapping file
+      gff_files             full path to gff formatted info files
+
+    optional arguments:
+      -h, --help            show this help message and exit
+      -c, --chains          permits output for assembled fragments only
+
+Script expects exactly one **mgra log like** file, one **gene<->number mapping** file and at least one **gff formatted**
+ file. Scripts outputs each supplied in gff format genome as a set of fragments, that are obtained from first column in
+ those gff formatted files.
+
+Just like the scripts from ``gene`` section, ``fga_assembly_fgr.py`` script, while reading genome information from gff
+formatted files, determines the genome name from the gff formatted file name, using the same algorithm for determining
+ it. Its important to notice, that this name must be the same, as the third value in the genome aliases definition row
+ in mgra log like file.
+
+Using the ``-c`` option one can limit the output of each genome to only those fragments, that were a part of at least
+ one gluing.
+
+
+
 
