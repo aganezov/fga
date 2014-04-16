@@ -298,12 +298,12 @@ if __name__ == "__main__":
     parser.add_argument("--tandem-filtration", dest="tandem_filtration", action="store_true", default=False,
                         help="substitutes every tandem duplication of gene ids, with just one copy")
     parser.add_argument("--sorted", default=False, action="store_true",
-                        dest="sorted", help="sorts all coding exons, that survived filtration, on respective fragments")
+                        dest="sorted", help="sorts all gene ids, that survived filtration, on respective fragments")
     parser.add_argument("-m", "--median", action="store_true", default=False,
                         help="rewrites each gene ids coordinates with median of median among all same "
                              "gene ids coordinates")
     parser.add_argument("-c", "--continuous", default=False, dest="continuous",
-                        help="filters out all coding exons, that, if being sorted by bp coordinates,"
+                        help="filters out all gene ids, that, if being sorted by bp coordinates,"
                              " don't form a contiguous sequence",
                         action="store_true")
     args = parser.parse_args()
