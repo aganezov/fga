@@ -259,34 +259,34 @@ As some gene can be represented as a sequence gene ids, and, from the genome rea
       previously computed medians. Results are written into start and end coordinates of respective coding exon sequences.
 
 
-    Example:
-    assume one has 3 identical gene ids AAA111 in some genome on same fragment with coordinates:
+        Example:
+        assume one has 3 identical gene ids AAA111 in some genome on same fragment with coordinates:
 
-    1. start = 0, end = 5
-    2. start = 20, end = 25
-    3. start = 40, end = 45
+        1. start = 0, end = 5
+        2. start = 20, end = 25
+        3. start = 40, end = 45
 
-    this option will rewrite for each of those gene ids their start and end coordinates as 22.5, as it equals to
+        this option will rewrite for each of those gene ids their start and end coordinates as 22.5, as it equals to
 
-    ((0 + 5) / 2 + (20 + 25) / 2 + (40 + 45) / 2 ) / 3
+        ((0 + 5) / 2 + (20 + 25) / 2 + (40 + 45) / 2 ) / 3
 
-    co called median of median
+        co called median of median
 
 2. **tandem filtration**: if, there are several gene ids, that are following each other in terms of their bp coordinates,
   they'll be represented with a single instance in the resulted data
 
 
-    Example:
-    assume one has 3 identical gene ids AAA111 in some genome on same fragment that form a contiguous sequence (as
-     there are no other gene ids, that, based on their coordinates would be in between AAA111 ids after sorting)
+        Example:
+        assume one has 3 identical gene ids AAA111 in some genome on same fragment that form a contiguous sequence (as
+         there are no other gene ids, that, based on their coordinates would be in between AAA111 ids after sorting)
 
-    ... AAA111 AAA111 AAA111 ...
+        ... AAA111 AAA111 AAA111 ...
 
-    this option will rewrite such gene ids as
+        this option will rewrite such gene ids as
 
-    ... AAA111 ...
+        ... AAA111 ...
 
-    leaving only one instance from each such contiguous sequence of same gene ids
+        leaving only one instance from each such contiguous sequence of same gene ids
 
 in terms of order, filtration and rewriting are performed in the following order:
 
