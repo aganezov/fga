@@ -9,7 +9,6 @@ Documentation
 ===
 Package contains extensive documentation, which can be found in [docs][2]  subdirectory in root directory.
 
-Documentation is structured the same way, source code in [src][3]  subdirectory.
 
 Licence
 ===
