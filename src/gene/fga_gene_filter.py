@@ -280,8 +280,6 @@ def main(gff_file, good_gene_ids_file=None, bad_gene_ids_file=None, settings=Non
         data = sorted(data,
                       key=lambda entry: (retrieve_fragment(entry), retrieve_start(entry), retrieve_end(entry)))
     if hasattr(settings, "tandem_filtration") and settings.tandem_filtration:
-        data = sorted(data,
-                      key=lambda entry: (retrieve_fragment(entry), retrieve_start(entry), retrieve_end(entry)))
         data = list(filter_tandem_duplication(data))
     print("\n".join(data))
 
@@ -298,8 +296,7 @@ if __name__ == "__main__":
                                                                                  " be filtered out during filtration",
                         dest="bad_gene_ids_file", default=None)
     parser.add_argument("--tandem-filtration", dest="tandem_filtration", action="store_true", default=False,
-                        help="substitutes every tandem duplication of gene ids, with just one copy. "
-                             "Enables \"--sorted key\"")
+                        help="substitutes every tandem duplication of gene ids, with just one copy")
     parser.add_argument("--sorted", default=False, action="store_true",
                         dest="sorted", help="sorts all coding exons, that survived filtration, on respective fragments")
     parser.add_argument("-m", "--median", action="store_true", default=False,
