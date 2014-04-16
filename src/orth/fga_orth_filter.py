@@ -256,5 +256,5 @@ if __name__ == "__main__":
     main(args.orthology_file,
          bad_families_file=args.bad_families_file,
          good_families_file=args.good_families_file,
-         bad_organisms_file=args.bad_organismss_file,
+         bad_organisms_file=args.bad_organisms_file,
          good_organisms_file=args.good_organisms_file, settings=args)
