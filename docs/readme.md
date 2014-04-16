@@ -244,6 +244,10 @@ about particular gene ids location in each genome. There are several filtration 
 unwanted gene ids from supplied gff formatted data. It is important to notice, that **bad** filtration set will always
  dominate a good one.
 
+* **continuous** exons filter: this option allows one to examine all coding exons, as if they were sorted by their bp
+ coordinates, and then to check if there are any coding exons, that might appear in a non contiguous sequences. Such
+ coding exons will be removed from further filtration.
+
 As same gene can be represented as a sequence of coding exons, and, for the purpose of genome rearrangement perspective,
  we'd like to represent each gene with a single coding exon. There are several options available for rewriting coding
   exons:
@@ -252,18 +256,16 @@ As same gene can be represented as a sequence of coding exons, and, for the purp
  we determine a median base pair coordinate. And the resulting coordinate for particular gene is computed as median of
   previously computed medians. Results are written into start and end coordinates of respective coding exon sequences.
 
-2. sorting: on all coding fragments (first column sequences ids) script performs sorting of coding exons, using their
-start and end coordinates.
-
-3. tandem duplication elimination: if, there are several coding sequences are following each other, they'll be
+2. tandem filtration: if, there are several coding exons are following each other, they'll be
 represented with a single instance in the resulted data
 
 in terms of order, filtration and rewriting is performed in the following order:
 
 1. gene id filtration, using **bad** and **good** gene id sets
-2. median coordinates rewriting
-3. bp coordinates sorting
-4. tandem duplication filtration
+2. continuous filtration
+3. median coordinates rewriting
+4. bp coordinates sorting
+5. tandem duplication filtration
 
 #### Usage
 
@@ -277,7 +279,7 @@ As ``-h/--help`` options states:
 
     usage: fga_gene_filter.py [-h] [--good-gene-ids-file GOOD_GENE_IDS_FILE]
                           [--bad-gene-ids-file BAD_GENE_IDS_FILE]
-                          [--no-tandem-filtration] [--non-sorted] [-m] [-c]
+                          [--tandem-filtration] [--sorted] [-m] [-c]
                           [gff_file]
 
     positional arguments:
@@ -292,18 +294,16 @@ As ``-h/--help`` options states:
       --bad-gene-ids-file BAD_GENE_IDS_FILE
                             full file name with gene ids to be filtered out during
                             filtration
-      --no-tandem-filtration
-                            stops substituting of every tandem duplication of gene
-                            ids, with just one copy
-      --not-sorted          prevents sorting of coding exons on respective
-                            fragments
+      --tandem-filtration   substitutes every tandem duplication of gene ids, with
+                            just one copy. Enables "--sorted key"
+      --sorted              sorts all coding exons, that survived filtration, on
+                            respective fragments
       -m, --median          rewrites each gene ids coordinates with median of
                             median among all same gene ids coordinates
-      -c, --continuous      doesn't work yet =(
+      -c, --continuous      filters out all coding exons, that, if being sorted by
+                            bp coordinates, don't form a contiguous sequence
 
-the script expect a full path to gff formatted file, or standard input. Byt the options flags, one can see, that bp
-coordinates sorting is enabled by default, tandem filtration is enabled by default. While median coordinates rewriting
-has to be invoked explicitly.
+the script expect a full path to gff formatted file, or standard input.
 
 [4]:https://github.com/sergey-aganezov-jr/fga/blob/master/src/gene/fga_gene_filter.py
 
