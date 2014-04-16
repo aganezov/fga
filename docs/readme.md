@@ -8,7 +8,7 @@ understand basic principals of what which script does, and hopefully answer all 
 The **FGA** project was undertaken to study evolutionary genomics in several mosquito genomes form South Africa.
 
 As the data had to be prepared and analyzed, several software scripts for those purposes were created. All scripts
-were written to be used as command line stand alone tools.
+were written to be used as command line standalone tools.
 
 In general, all software is divided into following categories:
 
@@ -19,9 +19,9 @@ In general, all software is divided into following categories:
 3. **assembly** - this set of scripts deals with data, that contains information about assembled statistics, among genomes
     More on particular script usage and data format in [assembly section](#assembly)
 
-Each set is contained in a respectively named python package. All scripts are written to be invoked as standalone command
-line tools. All scripts write to standard output, thus can be used as unix pipes sources. Some scripts can read from standard
-input only, if needed, thus can be used in any position in unix pipes.
+Each set is located in a respectively named python package in ``src`` package. All scripts are written to be invoked as
+ standalone command line tools. All scripts write to standard output, thus can be used as unix pipes sources.
+  Some scripts can read from standard input only, if needed, thus can be used in any position in unix pipes.
 
 All scripts are written with support of python3.3+. Each script contains ``#! /usr/bin/env python3`` directive, thus can be
 invoked without using ``python3 script_name.py`` prefix.
@@ -43,25 +43,25 @@ supplied data, but all those bottlenecks can be easily generalized.
 Assumptions:
 
 
-* all supplied data is separated by ``\t` symbols
-* second column in supplied data contains information regarding orthologous families names
-* forth column in supplied data contains information regarding particular genes, each gene family contains
-* fifth column in cupplied data contains information regarding organisms name
+* all supplied data is separated by ``\t`` symbols
+* second column in supplied data contains information regarding orthologous gene families names
+* forth column in supplied data contains information regarding particular genes (gene ids, coding exons), each gene family contains
+* fifth column in supplied data contains information regarding organisms name
 
 Thus one row in supplied data read as follows:
 
-    gene family ... gene id ... organism name
+    ... gene family ... gene id ... organism name ...
 
 and this means, that organism ``organism name`` contains a gene ``gene id``, which belongs to gene family ``gene family``
 
-As sometimes this data, while been contained in files, contains first-row-column definition, scripts skips first row in
- analysis.
+As sometimes this data, while been contained in files, contains column definition in the first row, scripts skips
+first row in analysis.
 
 ## [fga_orth_filter.py][1]
 
-This script is designed for filtration purposes, as most of the times not all existing raw data can be suited for experiment
+This script is designed for filtration purposes, as most of the times not all existing raw data can be suited for experiment.
 Using this script one can apply filters to ``gene family`` and ``organism name`` columns in supplied data. Scripts outputs
-rows from supplied data as is, is they suite filtration conditions.
+rows from supplied data as is, if they suite filtration conditions.
 
 #### Usage
 
@@ -121,21 +121,24 @@ and bad gene family sets, it will be discarded during the filtration process.
 This script allows one to limit gene families to different sets, which might suite for different genome rearrangement
  analysis scenarios:
 
-1. Analysis of genomes, that undertook evolutionary scenarios, that contain only genome rearrangement events.
- Suitable output for this purpose can be achieved by using **``-u``** option, when invoking the filtration script.
-2. Analysis of genomes, that undertook evolutionary scenarios, that contain genome rearrangements, insertions and
+1. Analysis of genomes, which undertook evolutionary scenarios, that contain only genome rearrangement events.
+ Suitable output for this purpose can be achieved by using **``-u/--unique``** option, when invoking the filtration script.
+2. Analysis of genomes, which undertook evolutionary scenarios, that contain genome rearrangements, insertions and
  deletions of unique genomic content. ***Not yet implemented.***
-3. Analysis of genomes, that undertook evolutionary scenarios, that contain genome rearrangements, insertions,
+3. Analysis of genomes, which undertook evolutionary scenarios, that contain genome rearrangements, insertions,
  deletions and duplication events. ***Not yet implemented.***
+
+ As one could have seen, from ``-h/--help`` option output, these scenarios are exclusive, thus only one option can be
+ legitimately used at a time.
 
 [1]:https://github.com/sergey-aganezov-jr/fga/blob/master/src/orth/fga_orth_filter.py
 
 ## [fga_orth_gnm.py][2]
 
 This script is designed for creating so called gene-number mapping. As one gene family can contain multiple different
-gene coding sequences in different genomes, all those genes, for the genome rearrangements shall be represented as same
- instances of homologous gene families. Thus each gene family gets a particular value (integer), and then all gene ids,
-  that belong to this gene family would be assigned respective value and output.
+gene ids in different genomes, all those genes ids for the genome rearrangements purposes shall be represented as same
+ instances of respective gene families. Thus each gene family gets a particular value (integer), and then all gene ids,
+  that belong to this gene family would be assigned to a respective value.
 
 #### Usage
 
@@ -143,8 +146,8 @@ gene coding sequences in different genomes, all those genes, for the genome rear
 
     cat ODB_file | fga_orth_gnm.py
 
-Such call will take all supplied data in, filter all gene families id, that could have been found in supplied data,
-and then process supplied data in the **supplied** order, assigning each gene id to respective value, gene family, it's
+Such call will take all supplied data in, sort all gene families, that could have been found in supplied data,
+and then process supplied data in the **supplied** order, assigning each gene id to respective value, gene family, the gene id is
 a part of, was previously assigned to.
 
     fga_orth_filter.py ODB_file --non-sorted
@@ -174,32 +177,32 @@ mapping.
 ## [fga_orth_check.py][3]
 
 This script is designed for simple pairwise check of different orthology sets. In other terms, it check if same
-genes from different organisms grouped in same families across different data files.
+genes from different organisms were grouped in same gene families across different data files.
 
 The main idea is as follows: for each gene family in first supplied file, determine which genes from which organisms,
- are mapped to this family. Assign same value to gene family and all genes that belong to it. For the second file do
- the same procedure, derive data in different chunks of gene families. For each gene family get all gene that belong
+ are mapped to this family. Assign same value to gene family and all genes that belong to it. For the second file,
+  derive data in different chunks of gene families. For each gene family get all gene that belong
  to it in second data set. Get a value for this gene family as the most encountered in terms of what genes in this
- family were mapped in first file. Once the value is derived, check if there some gene in observed family, that were
- mapped differently. If there's at least one so gene - report the gene family, as the one having a miss-map.
+ family were mapped in first file. Once the value is derived, check if there some gene in observed gene family in second dataset,
+  that were mapped differently in the first dataset. If there's at least one such miss-mapped gene - report the gene family, as the one having a miss-map.
 
 #### Usage
 
     fga_orth_check.py ODB_file_1 ODB_file_2
 
 Such call will take all supplied data in, determine gene family <-> gene id mapping based on first file, and then check
-gene families in the second file. The output of this script is value from second column (gene families names) in file
-``ODB_file_2`` that have at least one gene id miss mapped based on file one. So if one want to perform same analysis,
- based on different orhtology datasets, and wants to be sure in that initial data is consistent among those datasets,
+gene families in the second file. The output of this script will be values from second column (gene families names) in file
+``ODB_file_2`` that have at least one gene id miss mapped based on file ``ODB_file_1``. So if one want to perform same analysis,
+ based on different orhtology datasets, and wants to be sure that initial data is consistent among those datasets,
  they should perform the following command sequence to collect all unreliable gene families:
 
     fga_orth_check.py ODB_file_1 ODB_file_2 > bad_gene_families
 
     fga_orth_check.py ODB_file_2 ODB_file_1 >> bad_gene_families
 
-these calls will collect all gene families names, that contain anything inconsistent in them. Using
-``fga_orth_filter.py`` after this with ``--bad-families-file`` option pointing to ``bad_gene_families`` file on both
- those ODB files would produce consistent with each other orthology mapping files.
+these calls will collect all gene families names, that contain anything inconsistent in them. Usage of
+``fga_orth_filter.py`` script after this, with ``--bad-families-file`` option pointing to ``bad_gene_families`` file, on both
+ those ODB files, would produce consistent with each other orthology mapping files.
 
 As ``-h/--help`` option states:
 
@@ -223,10 +226,10 @@ this script expects exactly two arguments, which suppose to provide full paths t
 # Gene
 
 This section covers all scripts that can be found in ``gene`` python package in root ``src`` package. This scripts are
-designed to process gff formatted data, that is presented in gff format. All scripts assumes that gff formatted files
-have only correct info. More of gff format can be read [here](http://www.ensembl.org/info/website/upload/gff.html).
-The only assumption, is that on the 11th column we'll have a **gene id** information, which is used wildly in these
- scripts.
+designed to process gff formatted data. All scripts assumes that gff formatted files
+have only correctly formatted info. More of gff format can be read [here](http://www.ensembl.org/info/website/upload/gff.html).
+The only assumption, is that on the 11th column, in gff formatted files, we'll have a **gene id** information, which is used wildly in these
+ scripts and in ``orth`` scripts.
 
 When we talk about **gene <-> number mapping**  files, we assume the following format:
 
@@ -238,28 +241,52 @@ We assume two space-separated words, of which second consists of only digit (as 
 ## [fga_gene_filter.py][4]
 
 This script is designed for simple filtration of gff formatted files, which in this study were representing information
-about particular gene ids location in each genome. There are several filtration available with this script:
+about particular gene ids location in each genome. There are several filtrations available with this script:
 
 * **good** / **bad** gene ids filter: as files with those values can be supplied for this script, one can filter out all
 unwanted gene ids from supplied gff formatted data. It is important to notice, that **bad** filtration set will always
  dominate a good one.
 
-* **continuous** exons filter: this option allows one to examine all coding exons, as if they were sorted by their bp
- coordinates, and then to check if there are any coding exons, that might appear in a non contiguous sequences. Such
- coding exons will be removed from further filtration.
+* **continuous** gene id filter: this option allows one to examine all gene ids, as if they were sorted by their bp
+ coordinates, and then to check if there are any gene ids, that might appear in non contiguous sequences. Such
+ gene ids will be removed from further filtration.
 
-As same gene can be represented as a sequence of coding exons, and, for the purpose of genome rearrangement perspective,
- we'd like to represent each gene with a single coding exon. There are several options available for rewriting coding
-  exons:
+As some gene can be represented as a sequence gene ids, and, from the genome rearrangement perspective,
+ we'd like to represent each gene with a single gene. There are several options available for rewriting gene ids:
 
-1. median coordinates rewriting: for each gene we determine call coding exons. After that, for each coding exon
- we determine a median base pair coordinate. And the resulting coordinate for particular gene is computed as median of
-  previously computed medians. Results are written into start and end coordinates of respective coding exon sequences.
+1. **median** coordinates rewriting: for each gene we determine call coding exons. After that, for each coding exon
+     we determine a median base pair coordinate. And the resulting coordinate for particular gene is computed as median of
+      previously computed medians. Results are written into start and end coordinates of respective coding exon sequences.
 
-2. tandem filtration: if, there are several coding exons are following each other, they'll be
-represented with a single instance in the resulted data
+        Example:
+        assume one has 3 identical gene ids AAA111 in some genome on same fragment with coordinates:
 
-in terms of order, filtration and rewriting is performed in the following order:
+        1. start = 0, end = 5
+        2. start = 20, end = 25
+        3. start = 40, end = 45
+
+        this option will rewrite for each of those gene ids their start and end coordinates as 22.5, as it equals to
+
+        ((0 + 5) / 2 + (20 + 25) / 2 + (40 + 45) / 2 ) / 3
+
+         co called median of median
+
+ 2. **tandem filtration**: if, there are several gene ids, that are following each other in terms of their bp coordinates,
+  they'll be represented with a single instance in the resulted data
+
+        Example:
+        assume one has 3 identical gene ids AAA111 in some genome on same fragment that form a contiguous sequence (as
+         there are no other gene ids, that, based on their coordinates would be in between AAA111 ids after sorting)
+
+        ... AAA111 AAA111 AAA111 ...
+
+        this option will rewrite such gene ids as
+
+        ... AAA111 ...
+
+        leaving only one instance from each such contiguous sequence of same gene ids
+
+in terms of order, filtration and rewriting are performed in the following order:
 
 1. gene id filtration, using **bad** and **good** gene id sets
 2. continuous filtration
@@ -274,6 +301,43 @@ in terms of order, filtration and rewriting is performed in the following order:
     cat gff_file | fga_gene_filter.py
 
 Such call will simply output supplied data in gff format.
+
+    fga_gene_filter.py gff_file --bad-gene-ids-file bed_gene_ids
+
+Such call will output supplied data, skipping all rows, where 11th column contains values, that could be found in ``bed_gene_ids`` file
+
+    fga_gene_filter.py gff_file -c
+
+    fga_gene_filter.py gff_file --continuous
+
+Such call will take all supplied data in, internally sort it, determine which gene ids could have been found in non contiguous sequences,
+and then output supplied data in **supplied** order, skipping those rows, where those non-contiguous gene ids were specified in 11th column
+
+    fga_gene_filter.py gff_file -c -m
+
+    fga_gene_filter.py gff_file -c | fga_gene_filter.py -m
+
+Such call will first filter out all rows which contain non-contiguous gene ids, and then will rewrite coordinates for all
+gene ids in all rows, with newly computed median of median values.
+
+    fga_gene_filter.py gff_file -m --sorted --tandem-filtration
+
+    fga_gene_filter.py gff_file -m | fga_gene_filter.py gff_file --sorted | fga_gene_filter.py gff_file --tandem-filtration
+
+Such call will for all gene ids rewrite their coordinates, then sort them, using newly computed coordinates and then collapse
+contiguous sequences of same gene ids into single instances of those repetitive gene ids.
+
+**IMPORTANT** without specifying ``--sorted`` key, the result won't be correct, as while coordinates will be rewritten for
+ all gene ids, tandem filtration will be performed based on **supplied** order.
+
+    fga_gene_filter.py gff_file -c --sorted --tandem-filtration
+
+    fga_gene_filter.py gff_file -c -m --sorted --tandem--filtration
+
+Such two calls will produce the same output, as after removing non-contiguous sequences of gene ids, computing median of median
+coordinates for the rest of gene ids, and then sorting them, will not changing the relative order of different gene ids,
+as while we have a contiguous sequence of same gene ids, that sequence with rewritten coordinates will be located (relatively to other
+gene ids) at the same place in the overall order.
 
 As ``-h/--help`` options states:
 
@@ -295,7 +359,7 @@ As ``-h/--help`` options states:
                             full file name with gene ids to be filtered out during
                             filtration
       --tandem-filtration   substitutes every tandem duplication of gene ids, with
-                            just one copy. Enables "--sorted key"
+                            just one copy.
       --sorted              sorts all coding exons, that survived filtration, on
                             respective fragments
       -m, --median          rewrites each gene ids coordinates with median of
@@ -304,6 +368,9 @@ As ``-h/--help`` options states:
                             bp coordinates, don't form a contiguous sequence
 
 the script expect a full path to gff formatted file, or standard input.
+
+For correct performance of ``--tandem--duplication`` option, if used any of the ``-c/--continuous``, ``-m/--median`` options, one shall
+ supply ``--sorted`` option as well.
 
 [4]:https://github.com/sergey-aganezov-jr/fga/blob/master/src/gene/fga_gene_filter.py
 
