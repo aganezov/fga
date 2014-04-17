@@ -33,6 +33,8 @@ All scripts are named as follows:
 As each script was meant to be standalone and not dependent on any other package, library (except standard), etc., code
 contains some duplication in terms of support functions.
 
+For the description of pipelines, that were used in this study, please, refer to [pipelines section](https://github.com/sergey-aganezov-jr/fga/tree/master/docs#pipeline)
+
 
 # Orthology
 
@@ -509,5 +511,23 @@ Using the ``-c`` option one can limit the output of each genome to only those fr
  one gluing.
 
 
+
+
+# Pipeline
+
+The general view of the pipeline that was used for this study on stages before using MGRA software.
+
+    fga_orth_filter.py ODB_file --good-organisms-file organisms_filter -u > ODB_file_filtered
+
+    fga_orth_gnm.py ODB_file_filtered > gene_number_mapping
+
+    cut -d"    " -f4  ODB_file_filtered > gene_id_filter
+
+    fga_gene_filter.py -m --sorted --tandem-filtration --good-gene-ds-file gene-id-filter genome1_gff_file > genome1_gff_file__filtered
+    fga_gene_filter.py -m --sorted --tandem-filtration --good-gene-ds-file gene-id-filter genome2_gff_file > genome2_gff_file_filtered
+    ...
+    fga_gene_filter.py -m --sorted --tandem-filtration --good-gene-ds-file gene-id-filter genomeN_gff_file > genomN_gff_file_filtered
+
+    fga_gene_mgra_i.py gene_number_mapping genome1_gff_file__filtered genome2_gff_file_filtered .. genomN_gff_file_filtered > mgra_input
 
 
