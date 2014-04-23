@@ -483,7 +483,7 @@ script determines from which fragments in which genomes were those gene ids. Scr
 
 As ``-h/--help`` option states:
 
-    usage: fga_assembly_fgr.py [-h] [-c]
+    usage: fga_assembly_fgr.py [-h] [-c] [-g] [--omit-genome-names]
                            mgral_file gene_num_mapping_file gff_files
                            [gff_files ...]
 
@@ -496,7 +496,9 @@ As ``-h/--help`` option states:
 
     optional arguments:
       -h, --help            show this help message and exit
-      -c, --chains          permits output for assembled fragments only
+      -c, --chains          assembles glued pairs in glued chains
+      -g, --glued           permits output for assembled fragments only
+      --omit-genome-names   omits printing of genome names in the output
 
 Script expects exactly one **mgra log like** file, one **gene<->number mapping** file and at least one **gff formatted**
  file. Scripts outputs each supplied in gff format genome as a set of fragments, that are obtained from first column in
@@ -507,8 +509,15 @@ formatted files, determines the genome name from the gff formatted file name, us
  it. Its important to notice, that this name must be the same, as the third value in the genome aliases definition row
  in mgra log like file.
 
-Using the ``-c`` option one can limit the output of each genome to only those fragments, that were a part of at least
- one gluing.
+Using ``-c/--chains`` option, one can format the output, where paired fragments will be glued in chains of length of 3 or
+ greater, is such information can be retrieved from information about paired fragments.
+
+Using ``-g/--glued`` option, one can format the output, where only chains of length 2 or greater would be allowed to be
+ printed. In other words, usage such option, will limit the output for each genome only to fragments, that were glued
+ to some other fragment(s).
+
+Using ``--omit-genome-names`` option one can forbid the output of genome names. In this case there will be no bounds in
+ the output stream between different sets of fragments.
 
 
 
