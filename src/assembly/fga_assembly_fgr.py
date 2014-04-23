@@ -18,7 +18,8 @@ SPLIT_CHAR = "\t"
 
 # yeap, evil
 # these regular expressions are used to parse MGRAL format file
-vrregex = re.compile("\((?:(?P<vertex1>\d+(?:h|t))|oo),(?:(?P<vertex2>\d+(?:h|t))|oo)\)x\((?:(?P<vertex3>\d+(?:h|t))|oo),(?:(?P<vertex4>\d+(?:h|t))|oo)\):\{(?P<genome_alias>\w)\}")
+vrregex = re.compile(
+    "\((?:(?P<vertex1>\d+(?:h|t))|oo),(?:(?P<vertex2>\d+(?:h|t))|oo)\)x\((?:(?P<vertex3>\d+(?:h|t))|oo),(?:(?P<vertex4>\d+(?:h|t))|oo)\):\{(?P<genome_alias>\w)\}")
 gnsregex = re.compile("(?P<ola>\w)=(?P<gkn>\w+)=(?P<gn>\w+)")
 
 
@@ -112,83 +113,6 @@ def retrieve_strand(line):
         IndexError: in case retrieving gene id from supplied line didn't go flawlessly
     """
     return line.split(SPLIT_CHAR)[STRAND_COLUMN]
-
-""" Overview / help
-
-This script shall be invoked as a command line tool.
-This script is written with python3.4+ support.
-This script accepts only command line arguments.
-This script cannot be used in a Unix/Linux pipe.
-
-Idea:
-    The idea is to take MGRA-log-kind-of file (MGRAL), several gff files, and gene mapping file,
-    to report each genome as a new set of fragments, some of which might have been glued together.
-
-    Script analyses MGRAL file, identifying fusion operations and vertices they affect, after that script maps MGRA
-    BG vertices representation with actual gene ids they correspond to. After that gff files are processed in order
-    to map respective genes to fragments they are located on, perform several checks, and report which fragments were
-    glued together and in which directions. Then each genome gets return as a new set of fragments, some of which are
-    composed by a set of glued smaller fragments.
-
-    the -c/--chain option allows to observe only those frgaments in the output, which were a result of at least one gluing
-    operation
-
-    Example:
-        MGRAL file states:
-                R=AARA=Arabiensis
-                ...
-                (1t, oo)x(oo, 2t):{R}
-
-        Gene mapping file states:
-                AARA0078 1
-                AARA0098 2
-        gff file for Arabiensis states:
-            K2345 ... AARA0078  .. 1 5 +
-            K2356 ... AARA0098  .. 1 10 +
-
-        script will report:
-            arabiensis:
-                K2345(-) <==> K2356(+)
-
-    double checks:
-        script checks that genes, gluing is performed on, are left/right most genes on fragments
-        script checks that genes extremities, gluing is performed on, represent the end of the segment, with respect to
-            out-most genes direction
-        script check that genes, gluing is performed on, are on different fragments
-
-
-Input:
-    1 MGRAL file
-    1 gene mapping file
-    n gff files
-
-    MGRAL file format.
-    Such file must contain two types of lines:
-            1. Y=ABCS=abcdefg
-                where Y -- one letter\digit alias for organism name
-                where ABCS -- gene_naming prefix, that is used in gff files
-                where abcdefg -- genome verbose name
-            2. (1h,oo)x(2t,oo):{Y}  (3h,oo)x(4t,oo):{Y}
-                where 1h, 2t, oo -- vertices in breakpoint graph
-                where Y -- genome one letter/digit alias
-                the (a,b)x(c,d):{E} -- gluing operation
-
-    Gene mapping file format
-    Such file sut contain only one type of line:
-        ABCDEFGD 123
-            where ABCDEFGE -- gene id (ABCD here stand for gene_naming prefix, that must match one in MGRAL file)
-            where 123 -- value this gene was mapped to, during the transformation to breakpoint graph
-
-    gff files format can be read on website http://www.ensembl.org/info/website/upload/gff.html
-
-Output:
-    arabiensis
-	    KB704740 (-) <==> KB705228 (-)
-	    KB704585 (+) <==> KB704374 (-) <==> KB704562 (-)
-
-"""
-
-
 
 
 def retrieve_gene_number_mapping_from_file(gene_mapping_file):
@@ -414,7 +338,6 @@ def connection_creation(f1, f2, d1, d2, storage):
     storage[f2][v2].append((f1, v1))
 
 
-
 def chain_construction(start_fragment, extremity, storage, visited):
     """ constructs a chain of connected fragments by pairwise connection data
 
@@ -487,10 +410,10 @@ def get_assembly_fragments(genome, pairwise_gluing_info):
             if len(connection_info_storage[fragment_name]) == 1:
                 extremity = list(connection_info_storage[fragment_name].keys())[0]
             else:
-            ####################################################################################################
-            # if there are no connections to other fragments, this means, that this fragment was not a part of
-            # any gluing operation, and thus it represent a trivial chain of length 1
-            ####################################################################################################
+                ####################################################################################################
+                # if there are no connections to other fragments, this means, that this fragment was not a part of
+                # any gluing operation, and thus it represent a trivial chain of length 1
+                ####################################################################################################
                 extremity = None
             chains.append(chain_construction(start_fragment=fragment_name,
                                              extremity=extremity,
@@ -511,18 +434,42 @@ def main(mgral_file, gene_mapping_file, gff_files, options):
         genome_name = genome_aliases[genome_one_letter_alias][1]
         genome_key = genome_aliases[genome_one_letter_alias][0]
         for v1, v2 in gluing_results[genome_one_letter_alias]:
-            fragment1, d1 = find_fragment_by_extremity(genomes[genome_name],
-                                                       gene_number_mapping[genome_key][int(v1[:-1])], v1)
-            fragment2, d2 = find_fragment_by_extremity(genomes[genome_name],
-                                                       gene_number_mapping[genome_key][int(v2[:-1])], v2)
+            try:
+                tmp_result = find_fragment_by_extremity(genomes[genome_name],
+                                                        gene_number_mapping[genome_key][int(v1[:-1])], v1)
+                if tmp_result is not None:
+                    fragment1, d1 = tmp_result
+                else:
+                    continue
+                tmp_result = find_fragment_by_extremity(genomes[genome_name],
+                                                        gene_number_mapping[genome_key][int(v2[:-1])], v2)
+                if tmp_result is not None:
+                    fragment2, d2 = tmp_result
+                else:
+                    continue
+            except AssertionError:
+                continue
             result[genome_name].append((fragment1, fragment2, d1, d2))
     chained_result = {}
     for genome_name in genomes:
-        chained_result[genome_name] = get_assembly_fragments(genome=genomes[genome_name],
-                                                             pairwise_gluing_info=result[genome_name])
-        print(genome_name)
+        if hasattr(options, "chains") and options.chains:
+            chained_result[genome_name] = get_assembly_fragments(genome=genomes[genome_name],
+                                                                 pairwise_gluing_info=result[genome_name])
+        else:
+            visited = set()
+            chained_result[genome_name] = []
+            for value in result[genome_name]:
+                fragment_1, fragment_2, d1, d2 = value
+                chained_result[genome_name].append([(fragment_1, "-" if d1 < 0 else "+"), (fragment_2, "-" if d2 < 0 else "+")])
+                visited.add(fragment_1)
+                visited.add(fragment_2)
+            for fragment in genomes[genome_name]:
+                if fragment not in visited:
+                    chained_result[genome_name].append([(fragment, "+")])
+        if hasattr(options, "genome_names") and options.genome_names:
+            print(genome_name)
         for chain in chained_result[genome_name]:
-            if hasattr(options, "chains") and options.chains:
+            if hasattr(options, "glued") and options.glued:
                 print("\t" + " <==> ".join("{f} ({d})".format(f=f, d=d) for f, d in chain))
             elif len(chain) > 1:
                 print("\t" + " <==> ".join("{f} ({d})".format(f=f, d=d) for f, d in chain))
@@ -532,9 +479,13 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("mgral_file", help="full path to mgra like log file with information about glued vertices")
     parser.add_argument("gene_num_mapping_file", help="full path to gene mapping file")
-    parser.add_argument("-c", "--chains", action="store_false", default=True, help="permits output for assembled "
-                                                                                   "fragments only")
+    parser.add_argument("-c", "--chains", action="store_true", default=False, dest="chains",
+                        help="assembles glued pairs in glued chains")
+    parser.add_argument("-g", "--glued", action="store_false", default=True, dest="glued",
+                        help="permits output for assembled fragments only")
     parser.add_argument("gff_files", nargs="+", help="full path to gff formatted info files")
+    parser.add_argument("--omit-genome-names", action="store_false", default=True, dest="genome_names",
+                        help="omits printing of genome names in the output")
     args = parser.parse_args()
     main(mgral_file=args.mgral_file,
          gene_mapping_file=args.gene_num_mapping_file,
