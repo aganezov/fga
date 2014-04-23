@@ -437,17 +437,21 @@ def main(mgral_file, gene_mapping_file, gff_files, options):
             try:
                 tmp_result = find_fragment_by_extremity(genomes[genome_name],
                                                         gene_number_mapping[genome_key][int(v1[:-1])], v1)
-                if tmp_result is not None:
+                if tmp_result is not None:  # None would be in the case, when supplied gene_id didn't correspond to any
+                                            # outer-most synteny blocks in given genome
                     fragment1, d1 = tmp_result
                 else:
                     continue
                 tmp_result = find_fragment_by_extremity(genomes[genome_name],
                                                         gene_number_mapping[genome_key][int(v2[:-1])], v2)
-                if tmp_result is not None:
+                if tmp_result is not None:  # None would be in the case, when supplied gene_id didn't correspond to any
+                                            # outer-most synteny blocks in given genome
                     fragment2, d2 = tmp_result
                 else:
                     continue
-            except AssertionError:
+            except AssertionError:  # an assertion error is raise, when supplied to find_fragment_by_extremity
+                                    # gene id had incorrect orientation, in order for some extremity if it to take
+                                    # place in a two-break operation
                 continue
             result[genome_name].append((fragment1, fragment2, d1, d2))
     chained_result = {}
@@ -456,15 +460,20 @@ def main(mgral_file, gene_mapping_file, gff_files, options):
             chained_result[genome_name] = get_assembly_fragments(genome=genomes[genome_name],
                                                                  pairwise_gluing_info=result[genome_name])
         else:
+            # if no chain option is supplied, each gluing will be represented a pair of fragments with respective
+            # orientations
             visited = set()
             chained_result[genome_name] = []
             for value in result[genome_name]:
                 fragment_1, fragment_2, d1, d2 = value
-                chained_result[genome_name].append([(fragment_1, "-" if d1 < 0 else "+"), (fragment_2, "-" if d2 < 0 else "+")])
+                # d1, d2 have values of 1 or -1, which has to be translated into + or - notation
+                chained_result[genome_name].append([(fragment_1, "-" if d1 < 0 else "+"),
+                                                    (fragment_2, "-" if d2 < 0 else "+")])
                 visited.add(fragment_1)
                 visited.add(fragment_2)
             for fragment in genomes[genome_name]:
-                if fragment not in visited:
+                if fragment not in visited:  # if this fragment didn't take place in any gluing operation, it shall be
+                                             #  added solely
                     chained_result[genome_name].append([(fragment, "+")])
         if hasattr(options, "genome_names") and options.genome_names:
             print(genome_name)
